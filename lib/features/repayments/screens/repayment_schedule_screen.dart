@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../../loan_users/data/loan_users_repository.dart';
 import '../../loan_users/models/repayment_model.dart';
 import '../../new_loan/models/connection_model.dart';
@@ -21,22 +21,22 @@ class RepaymentScheduleScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: DashboardTheme.surface,
+      backgroundColor: AppTheme.colors(context).surface,
       body: Column(
         children: [
-          const DashboardAppBar(
+          DashboardAppBar(
             title: 'Repayment Schedules',
             showBackButton: true,
           ),
           Expanded(
             child: connectionAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: DashboardTheme.primary),
+              loading: () => Center(
+                child: CircularProgressIndicator(color: AppTheme.colors(context).primary),
               ),
               error: (err, stack) => Center(
                 child: Text(
                   'Error: $err',
-                  style: const TextStyle(color: DashboardTheme.danger),
+                  style: TextStyle(color: AppTheme.colors(context).danger),
                 ),
               ),
               data: (connection) {
@@ -45,15 +45,15 @@ class RepaymentScheduleScreen extends ConsumerWidget {
                     .toList();
 
                 return repaymentsAsync.when(
-                  loading: () => const Center(
+                  loading: () => Center(
                     child: CircularProgressIndicator(
-                      color: DashboardTheme.primary,
+                      color: AppTheme.colors(context).primary,
                     ),
                   ),
                   error: (err, stack) => Center(
                     child: Text(
                       'Error loading repayments: $err',
-                      style: const TextStyle(color: DashboardTheme.danger),
+                      style: TextStyle(color: AppTheme.colors(context).danger),
                     ),
                   ),
                   data: (repayments) {
@@ -67,19 +67,19 @@ class RepaymentScheduleScreen extends ConsumerWidget {
                         .toList();
 
                     return SingleChildScrollView(
-                      padding: const EdgeInsets.all(DashboardTheme.spacingLg),
+                      padding: EdgeInsets.all(AppTheme.spacingLg),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _buildHeader(connection, previous, upcoming),
-                          const SizedBox(height: DashboardTheme.spacingXl),
+                          _buildHeader(context, connection, previous, upcoming),
+                          SizedBox(height: AppTheme.spacingXl),
 
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
+                              Text(
                                 'Upcoming Schedule',
-                                style: DashboardTheme.headingMedium,
+                                style: AppTheme.text(context).headingMedium,
                               ),
                               TextButton.icon(
                                 onPressed: activeLoans.isEmpty
@@ -89,14 +89,14 @@ class RepaymentScheduleScreen extends ConsumerWidget {
                                         ref,
                                         activeLoans,
                                       ),
-                                icon: const Icon(Icons.add),
-                                label: const Text('Add'),
+                                icon: Icon(Icons.add),
+                                label: Text('Add'),
                               ),
                             ],
                           ),
-                          const SizedBox(height: DashboardTheme.spacingMd),
+                          SizedBox(height: AppTheme.spacingMd),
                           if (upcoming.isEmpty)
-                            _buildEmptyState(
+                            _buildEmptyState(context, 
                               icon: Icons.event_available,
                               title: 'No Upcoming Payments',
                               subtitle:
@@ -111,15 +111,15 @@ class RepaymentScheduleScreen extends ConsumerWidget {
                               ),
                             ),
 
-                          const SizedBox(height: DashboardTheme.spacingXxl),
+                          SizedBox(height: AppTheme.spacingXxl),
 
-                          const Text(
+                          Text(
                             'Previous Repayments',
-                            style: DashboardTheme.headingMedium,
+                            style: AppTheme.text(context).headingMedium,
                           ),
-                          const SizedBox(height: DashboardTheme.spacingMd),
+                          const SizedBox(height: AppTheme.spacingMd),
                           if (previous.isEmpty)
-                            _buildEmptyState(
+                            _buildEmptyState(context, 
                               icon: Icons.history,
                               title: 'No Previous Repayments',
                               subtitle: 'No payments have been recorded yet.',
@@ -143,7 +143,7 @@ class RepaymentScheduleScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(
+  Widget _buildHeader(BuildContext context, 
     ConnectionModel connection,
     List<RepaymentModel> previous,
     List<RepaymentModel> upcoming,
@@ -160,103 +160,93 @@ class RepaymentScheduleScreen extends ConsumerWidget {
     final double progress = totalLoan > 0 ? totalPaid / totalLoan : 0.0;
 
     return Container(
-      padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: DashboardTheme.radiusLg,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.all(AppTheme.spacingLg),
+      decoration: AppTheme.cardDecoration(context),
       child: Column(
         children: [
           Row(
             children: [
               CircleAvatar(
                 radius: 28,
-                backgroundColor: DashboardTheme.primarySurface,
+                backgroundColor: AppTheme.colors(context).primarySurface,
                 child: Text(
                   connection.borrowerName.isNotEmpty
                       ? connection.borrowerName.substring(0, 1).toUpperCase()
                       : 'U',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: DashboardTheme.primary,
+                    color: AppTheme.colors(context).primary,
                   ),
                 ),
               ),
-              const SizedBox(width: DashboardTheme.spacingLg),
+              SizedBox(width: AppTheme.spacingLg),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       connection.borrowerName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: DashboardTheme.textPrimary,
+                        color: AppTheme.colors(context).textPrimary,
                       ),
                     ),
                     Text(
                       'CNIC: ${connection.borrowerCnic}',
-                      style: DashboardTheme.bodyMedium,
+                      style: AppTheme.text(context).bodyMedium,
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: DashboardTheme.spacingLg),
+          SizedBox(height: AppTheme.spacingLg),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Repayment Progress',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: DashboardTheme.textSecondary,
+                  color: AppTheme.colors(context).textSecondary,
                 ),
               ),
               Text(
                 '${(progress * 100).toStringAsFixed(0)}%',
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: DashboardTheme.primary,
+                  color: AppTheme.colors(context).primary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: DashboardTheme.spacingSm),
+          SizedBox(height: AppTheme.spacingSm),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: DashboardTheme.primarySurface,
-              color: DashboardTheme.primary,
+              backgroundColor: AppTheme.colors(context).primarySurface,
+              color: AppTheme.colors(context).primary,
               minHeight: 8,
             ),
           ),
-          const SizedBox(height: DashboardTheme.spacingMd),
+          const SizedBox(height: AppTheme.spacingMd),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Paid: PKR ${totalPaid.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  color: DashboardTheme.success,
+                style: TextStyle(
+                  color: AppTheme.colors(context).success,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
                 'Remaining: PKR ${totalUpcoming.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  color: DashboardTheme.warning,
+                style: TextStyle(
+                  color: AppTheme.colors(context).warning,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -267,38 +257,38 @@ class RepaymentScheduleScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState({
+  Widget _buildEmptyState(BuildContext context, {
     required IconData icon,
     required String title,
     required String subtitle,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        vertical: DashboardTheme.spacingXxl,
-        horizontal: DashboardTheme.spacingLg,
+      padding: EdgeInsets.symmetric(
+        vertical: AppTheme.spacingXxl,
+        horizontal: AppTheme.spacingLg,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: DashboardTheme.radiusLg,
-        border: Border.all(color: Colors.grey.shade200),
+        color: AppTheme.colors(context).cardBackground,
+        borderRadius: AppTheme.radiusLg,
+        border: Border.all(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 48, color: Colors.grey.shade400),
-          const SizedBox(height: DashboardTheme.spacingMd),
+          Icon(icon, size: 48, color: AppTheme.colors(context).textTertiary),
+          SizedBox(height: AppTheme.spacingMd),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: DashboardTheme.textPrimary,
+              color: AppTheme.colors(context).textPrimary,
             ),
           ),
-          const SizedBox(height: DashboardTheme.spacingXs),
+          SizedBox(height: AppTheme.spacingXs),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: DashboardTheme.bodyMedium,
+            style: AppTheme.text(context).bodyMedium,
           ),
         ],
       ),
@@ -328,7 +318,8 @@ class RepaymentScheduleScreen extends ConsumerWidget {
         return StatefulBuilder(
           builder: (ctx, setState) {
             return AlertDialog(
-              title: const Text('Generate Monthly Schedule'),
+              backgroundColor: AppTheme.colors(context).cardBackground,
+              title: Text('Generate Monthly Schedule', style: TextStyle(color: AppTheme.colors(context).textPrimary)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -360,7 +351,7 @@ class RepaymentScheduleScreen extends ConsumerWidget {
                         }
                       },
                     ),
-                    const SizedBox(height: DashboardTheme.spacingMd),
+                    const SizedBox(height: AppTheme.spacingMd),
                     TextField(
                       controller: amountController,
                       keyboardType: TextInputType.number,
@@ -368,7 +359,7 @@ class RepaymentScheduleScreen extends ConsumerWidget {
                         labelText: 'Total Amount to Schedule',
                       ),
                     ),
-                    const SizedBox(height: DashboardTheme.spacingMd),
+                    const SizedBox(height: AppTheme.spacingMd),
                     TextField(
                       controller: monthsController,
                       keyboardType: TextInputType.number,
@@ -376,7 +367,7 @@ class RepaymentScheduleScreen extends ConsumerWidget {
                         labelText: 'Number of Months',
                       ),
                     ),
-                    const SizedBox(height: DashboardTheme.spacingMd),
+                    const SizedBox(height: AppTheme.spacingMd),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: const Text('Start Date'),
@@ -472,42 +463,42 @@ class _UpcomingRepaymentCard extends StatelessWidget {
     final dateStr =
         repayment.dueDate?.toLocal().toString().split(' ')[0] ?? 'Unknown Date';
     return Container(
-      margin: const EdgeInsets.only(bottom: DashboardTheme.spacingMd),
+      margin: EdgeInsets.only(bottom: AppTheme.spacingMd),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: DashboardTheme.radiusMd,
-        border: Border.all(color: DashboardTheme.warningSurface, width: 1.5),
+        color: AppTheme.colors(context).cardBackground,
+        borderRadius: AppTheme.radiusMd,
+        border: Border.all(color: AppTheme.colors(context).warningSurface, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: DashboardTheme.warning.withValues(alpha: 0.05),
+            color: AppTheme.colors(context).warning.withValues(alpha: 0.05),
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: DashboardTheme.spacingMd,
-          vertical: DashboardTheme.spacingSm,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingMd,
+          vertical: AppTheme.spacingSm,
         ),
         leading: Container(
-          padding: const EdgeInsets.all(DashboardTheme.spacingSm),
+          padding: EdgeInsets.all(AppTheme.spacingSm),
           decoration: BoxDecoration(
-            color: DashboardTheme.warningSurface,
+            color: AppTheme.colors(context).warningSurface,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(Icons.schedule, color: DashboardTheme.warning),
+          child: Icon(Icons.schedule, color: AppTheme.colors(context).warning),
         ),
         title: Text(
           'PKR ${repayment.amount.toStringAsFixed(0)}',
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.colors(context).textPrimary),
         ),
         subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
+          padding: EdgeInsets.only(top: 4),
           child: Text(
             'Due: $dateStr',
-            style: const TextStyle(
-              color: DashboardTheme.warning,
+            style: TextStyle(
+              color: AppTheme.colors(context).warning,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -517,29 +508,29 @@ class _UpcomingRepaymentCard extends StatelessWidget {
           children: [
             Container(
               decoration: BoxDecoration(
-                color: DashboardTheme.primarySurface,
+                color: AppTheme.colors(context).primarySurface,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.edit_calendar,
-                  color: DashboardTheme.primary,
+                  color: AppTheme.colors(context).primary,
                   size: 20,
                 ),
                 onPressed: () => _showEditDialog(context),
                 tooltip: 'Adjust Schedule',
               ),
             ),
-            const SizedBox(width: DashboardTheme.spacingSm),
+            SizedBox(width: AppTheme.spacingSm),
             Container(
               decoration: BoxDecoration(
-                color: DashboardTheme.dangerSurface,
+                color: AppTheme.colors(context).dangerSurface,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.delete_outline,
-                  color: DashboardTheme.danger,
+                  color: AppTheme.colors(context).danger,
                   size: 20,
                 ),
                 onPressed: () => _showDeleteDialog(context),
@@ -564,7 +555,8 @@ class _UpcomingRepaymentCard extends StatelessWidget {
         return StatefulBuilder(
           builder: (ctx, setState) {
             return AlertDialog(
-              title: const Text('Adjust Schedule'),
+              backgroundColor: AppTheme.colors(context).cardBackground,
+              title: Text('Adjust Schedule', style: TextStyle(color: AppTheme.colors(context).textPrimary)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -573,7 +565,7 @@ class _UpcomingRepaymentCard extends StatelessWidget {
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Amount'),
                   ),
-                  const SizedBox(height: DashboardTheme.spacingMd),
+                  const SizedBox(height: AppTheme.spacingMd),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Due Date'),
@@ -652,18 +644,20 @@ class _UpcomingRepaymentCard extends StatelessWidget {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Remove Schedule'),
-          content: const Text(
+          backgroundColor: AppTheme.colors(context).cardBackground,
+          title: Text('Remove Schedule', style: TextStyle(color: AppTheme.colors(context).textPrimary)),
+          content: Text(
             'Are you sure you want to remove this scheduled payment?',
+            style: TextStyle(color: AppTheme.colors(context).textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: DashboardTheme.danger,
+                backgroundColor: AppTheme.colors(context).danger,
               ),
               onPressed: () async {
                 try {
@@ -705,32 +699,32 @@ class _PreviousRepaymentCard extends StatelessWidget {
         repayment.paidDate?.toLocal().toString().split(' ')[0] ??
         'Unknown Date';
     return Container(
-      margin: const EdgeInsets.only(bottom: DashboardTheme.spacingMd),
+      margin: EdgeInsets.only(bottom: AppTheme.spacingMd),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: DashboardTheme.radiusMd,
-        border: Border.all(color: Colors.grey.shade200),
+        color: AppTheme.colors(context).cardBackground,
+        borderRadius: AppTheme.radiusMd,
+        border: Border.all(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.2)),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: DashboardTheme.spacingMd,
-          vertical: DashboardTheme.spacingSm,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingMd,
+          vertical: AppTheme.spacingSm,
         ),
         leading: Container(
-          padding: const EdgeInsets.all(DashboardTheme.spacingSm),
+          padding: EdgeInsets.all(AppTheme.spacingSm),
           decoration: BoxDecoration(
-            color: DashboardTheme.successSurface,
+            color: AppTheme.colors(context).successSurface,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(Icons.check_circle, color: DashboardTheme.success),
+          child: Icon(Icons.check_circle, color: AppTheme.colors(context).success),
         ),
         title: Text(
           'PKR ${repayment.amount.toStringAsFixed(0)}',
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.colors(context).textPrimary),
         ),
         subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text('Paid on: $dateStr', style: DashboardTheme.bodyMedium),
+          padding: EdgeInsets.only(top: 4),
+          child: Text('Paid on: $dateStr', style: AppTheme.text(context).bodyMedium),
         ),
       ),
     );

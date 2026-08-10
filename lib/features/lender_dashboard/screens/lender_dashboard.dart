@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/role_provider.dart';
 import '../providers/dashboard_providers.dart';
-import '../theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../widgets/active_loans_card.dart';
 import '../../../core/widgets/dashboard_app_bar.dart';
 import '../widgets/loan_performance_chart.dart';
@@ -11,6 +11,7 @@ import '../widgets/portfolio_summary_card.dart';
 import '../widgets/quick_actions_bar.dart';
 import '../widgets/recent_activity_card.dart';
 import '../widgets/pending_confirmations_card.dart';
+import '../widgets/sent_invitations_card.dart';
 import '../../borrower_dashboard/screens/borrower_dashboard.dart';
 
 /// Main home screen — switches between Lender and Borrower dashboard
@@ -27,57 +28,65 @@ class LenderDashboard extends ConsumerStatefulWidget {
 class _LenderDashboardState extends ConsumerState<LenderDashboard> {
   @override
   Widget build(BuildContext context) {
+    // Determine if we should show both tabs based on user roles
+    final userRolesAsync = ref.watch(userRolesProvider);
+    final hasBothRoles =
+        userRolesAsync.whenOrNull(
+          data: (roles) =>
+              (roles['hasLender'] ?? false) && (roles['hasBorrower'] ?? false),
+        ) ??
+        false;
+
     final role = ref.watch(roleProvider);
 
-    if (role == AppRole.borrower) {
-      return const BorrowerDashboard();
-    }
-
     return Scaffold(
-      backgroundColor: DashboardTheme.surface,
-      body: RefreshIndicator(
-        color: DashboardTheme.primary,
-        onRefresh: _refreshDashboard,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              // ── App bar with greeting ──────────────────────────────
-              DashboardAppBar(),
-
-              SizedBox(height: DashboardTheme.spacingLg),
-
-              // ── Quick action chips ────────────────────────────────
-              QuickActionsBar(),
-
-              SizedBox(height: DashboardTheme.spacingXl),
-
-              // ── Portfolio KPI grid ────────────────────────────────
-              PortfolioSummaryCard(),
-
-              SizedBox(height: DashboardTheme.spacingXl),
-
-              // ── Monthly performance chart ─────────────────────────
-              LoanPerformanceChart(),
-
-              SizedBox(height: DashboardTheme.spacingXl),
-
-              // ── Active loans list ─────────────────────────────────
-              ActiveLoansCard(),
-
-              SizedBox(height: DashboardTheme.spacingXl),
-
-              // ── Pending Confirmations ─────────────────────────────
-              PendingConfirmationsCard(),
-
-              // ── Recent activity feed ──────────────────────────────
-              RecentActivityCard(),
-
-              // Bottom padding for comfortable scrolling (behind nav bar)
-              SizedBox(height: 120),
-            ],
+      backgroundColor: AppTheme.colors(context).surface,
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: role == AppRole.borrower
+                ? BorrowerDashboard(hasBothRoles: hasBothRoles)
+                : _buildLenderView(context, hasBothRoles),
           ),
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: DashboardAppBar(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLenderView(BuildContext context, bool hasBothRoles) {
+    return RefreshIndicator(
+      color: AppTheme.colors(context).primary,
+      onRefresh: _refreshDashboard,
+      child: SingleChildScrollView(
+        key: const ValueKey('LenderView'),
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.only(top: hasBothRoles ? 160 : 135),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            SizedBox(height: AppTheme.spacingLg),
+            QuickActionsBar(),
+            SizedBox(height: AppTheme.spacingXl),
+            PortfolioSummaryCard(),
+            SizedBox(height: AppTheme.spacingXl),
+            LoanPerformanceChart(),
+            SizedBox(height: AppTheme.spacingXl),
+            SentInvitationsCard(),
+            SizedBox(height: AppTheme.spacingXl),
+            ActiveLoansCard(),
+            SizedBox(height: AppTheme.spacingXl),
+            PendingConfirmationsCard(),
+            RecentActivityCard(),
+            SizedBox(height: 120),
+          ],
         ),
       ),
     );

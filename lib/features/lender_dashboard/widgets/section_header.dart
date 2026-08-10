@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 
 /// Reusable section header with a title and an optional trailing action.
 class SectionHeader extends StatelessWidget {
@@ -18,23 +18,23 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: DashboardTheme.spacingLg,
-        vertical: DashboardTheme.spacingSm,
+      padding: EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingLg,
+        vertical: AppTheme.spacingSm,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: DashboardTheme.headingMedium),
+          Text(title, style: AppTheme.text(context).headingMedium),
           if (trailing != null)
             trailing!
           else if (onViewAll != null)
             TextButton(
               onPressed: onViewAll,
               style: TextButton.styleFrom(
-                foregroundColor: DashboardTheme.primary,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                textStyle: DashboardTheme.labelBold,
+                foregroundColor: AppTheme.colors(context).primary,
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                textStyle: AppTheme.text(context).labelBold,
               ),
               child: const Text('View All'),
             ),

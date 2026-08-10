@@ -5,7 +5,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../loan_users/data/loan_users_repository.dart';
 import '../providers/dashboard_providers.dart';
-import '../theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import 'loan_item_tile.dart';
 import 'section_header.dart';
 
@@ -20,6 +20,7 @@ class ActiveLoansCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final connectionsAsync = ref.watch(activeConnectionsProvider);
     final service = ref.watch(dashboardServiceProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,22 +32,28 @@ class ActiveLoansCard extends ConsumerWidget {
           },
         ),
         Container(
-          margin: const EdgeInsets.symmetric(
-            horizontal: DashboardTheme.spacingLg,
+          margin: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingLg,
           ),
-          decoration: DashboardTheme.cardDecoration,
+          decoration: BoxDecoration(
+            color: AppTheme.colors(context).cardBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+            ),
+          ),
           child: connectionsAsync.when(
-            loading: () => _buildShimmer(),
+            loading: () => _buildShimmer(context),
             error: (e, _) => Padding(
-              padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-              child: Text('Error: $e', style: DashboardTheme.bodyMedium),
+              padding: EdgeInsets.all(AppTheme.spacingLg),
+              child: Text('Error: $e', style: AppTheme.text(context).bodyMedium),
             ),
             data: (connections) {
               final activeUsers = connections.where((c) => c.claimStatus == 'claimed').toList();
               if (activeUsers.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.all(DashboardTheme.spacingLg),
-                  child: Text('No active loan users yet.', style: DashboardTheme.bodyMedium),
+                return Padding(
+                  padding: EdgeInsets.all(AppTheme.spacingLg),
+                  child: Text('No active loan users yet.', style: AppTheme.text(context).bodyMedium),
                 );
               }
               final displayUsers = activeUsers.take(5).toList();
@@ -76,7 +83,7 @@ class ActiveLoansCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildShimmer() {
+  Widget _buildShimmer(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: Colors.grey.shade200,
       highlightColor: Colors.grey.shade50,
@@ -85,13 +92,13 @@ class ActiveLoansCard extends ConsumerWidget {
           3,
           (_) => Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: DashboardTheme.spacingLg,
-              vertical: DashboardTheme.spacingMd,
+              horizontal: AppTheme.spacingLg,
+              vertical: AppTheme.spacingMd,
             ),
             child: Row(
               children: [
                 const CircleAvatar(radius: 20, backgroundColor: Colors.white),
-                const SizedBox(width: DashboardTheme.spacingMd),
+                const SizedBox(width: AppTheme.spacingMd),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

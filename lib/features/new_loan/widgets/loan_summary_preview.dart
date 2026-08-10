@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../services/new_loan_service.dart';
 
 /// Live preview card that recalculates financial projections as the user types.
@@ -31,15 +31,15 @@ class LoanSummaryPreview extends StatelessWidget {
     if (!_hasValidInputs) {
       return Container(
         width: double.infinity,
-        margin: const EdgeInsets.symmetric(
-          horizontal: DashboardTheme.spacingLg,
+        margin: EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingLg,
         ),
-        padding: const EdgeInsets.all(DashboardTheme.spacingXl),
+        padding: EdgeInsets.all(AppTheme.spacingXl),
         decoration: BoxDecoration(
-          color: DashboardTheme.surface,
-          borderRadius: DashboardTheme.radiusMd,
+          color: AppTheme.colors(context).surface,
+          borderRadius: AppTheme.radiusMd,
           border: Border.all(
-            color: DashboardTheme.textTertiary.withValues(alpha: 0.3),
+            color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.3),
             style: BorderStyle.solid,
           ),
         ),
@@ -48,14 +48,14 @@ class LoanSummaryPreview extends StatelessWidget {
             Icon(
               Icons.calculate_outlined,
               size: 32,
-              color: DashboardTheme.textTertiary,
+              color: AppTheme.colors(context).textTertiary,
             ),
-            const SizedBox(height: DashboardTheme.spacingSm),
+            SizedBox(height: AppTheme.spacingSm),
             Text(
               'Enter amount, rate & duration\nto see loan summary',
               textAlign: TextAlign.center,
-              style: DashboardTheme.bodyMedium.copyWith(
-                color: DashboardTheme.textTertiary,
+              style: AppTheme.text(context).bodyMedium.copyWith(
+                color: AppTheme.colors(context).textTertiary,
               ),
             ),
           ],
@@ -84,12 +84,12 @@ class LoanSummaryPreview extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(
-        horizontal: DashboardTheme.spacingLg,
+      margin: EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingLg,
       ),
-      padding: const EdgeInsets.all(DashboardTheme.spacingLg),
+      padding: EdgeInsets.all(AppTheme.spacingLg),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
@@ -98,8 +98,8 @@ class LoanSummaryPreview extends StatelessWidget {
             Color(0xFF388E3C),
           ],
         ),
-        borderRadius: DashboardTheme.radiusMd,
-        boxShadow: DashboardTheme.elevatedShadow,
+        borderRadius: AppTheme.radiusMd,
+        boxShadow: AppTheme.elevatedShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,15 +107,15 @@ class LoanSummaryPreview extends StatelessWidget {
           // ── Title row ─────────────────────────────────────────────
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.auto_graph_rounded,
                 color: Colors.white70,
                 size: 18,
               ),
-              const SizedBox(width: DashboardTheme.spacingSm),
+              SizedBox(width: AppTheme.spacingSm),
               Text(
                 'Loan Summary',
-                style: DashboardTheme.labelBold.copyWith(
+                style: AppTheme.text(context).labelBold.copyWith(
                   color: Colors.white70,
                   letterSpacing: 0.5,
                 ),
@@ -123,31 +123,31 @@ class LoanSummaryPreview extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: DashboardTheme.spacingLg),
+          SizedBox(height: AppTheme.spacingLg),
 
           // ── Monthly installment (hero metric) ─────────────────────
           Text(
             'Monthly Installment',
-            style: DashboardTheme.bodySmall.copyWith(color: Colors.white60),
+            style: AppTheme.text(context).bodySmall.copyWith(color: Colors.white60),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             service.formatCurrency(monthlyInstallment),
-            style: DashboardTheme.headingLarge.copyWith(
+            style: AppTheme.text(context).headingLarge.copyWith(
               color: Colors.white,
               fontSize: 28,
               letterSpacing: -0.5,
             ),
           ),
 
-          const SizedBox(height: DashboardTheme.spacingLg),
+          const SizedBox(height: AppTheme.spacingLg),
 
           // ── Two-column details ────────────────────────────────────
           Container(
-            padding: const EdgeInsets.all(DashboardTheme.spacingMd),
+            padding: const EdgeInsets.all(AppTheme.spacingMd),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: DashboardTheme.radiusSm,
+              borderRadius: AppTheme.radiusSm,
             ),
             child: Row(
               children: [
@@ -189,12 +189,12 @@ class _SummaryItem extends StatelessWidget {
       children: [
         Text(
           label,
-          style: DashboardTheme.bodySmall.copyWith(color: Colors.white60),
+          style: AppTheme.text(context).bodySmall.copyWith(color: Colors.white60),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(
           value,
-          style: DashboardTheme.headingSmall.copyWith(
+          style: AppTheme.text(context).headingSmall.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w700,
           ),

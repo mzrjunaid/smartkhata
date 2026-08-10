@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../models/dashboard_summary.dart';
 import '../providers/dashboard_providers.dart';
-import '../theme/dashboard_theme.dart';
-import 'stat_tile.dart';
+import '../services/dashboard_service.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 
-/// Hero card displaying 4 KPIs in a responsive 2×2 grid.
-///
-/// Self-contained: watches [dashboardSummaryProvider] internally and
-/// handles loading / error states via shimmer and inline messages.
+/// Displays a modern, banking-style glossy Hero Card for main balances,
+/// followed by a row of secondary KPIs.
 class PortfolioSummaryCard extends ConsumerWidget {
   const PortfolioSummaryCard({super.key});
 
@@ -19,110 +18,327 @@ class PortfolioSummaryCard extends ConsumerWidget {
     final service = ref.watch(dashboardServiceProvider);
 
     return summaryAsync.when(
-      loading: () => _buildShimmer(),
-      error: (e, _) => _buildError(e.toString()),
+      loading: () => _buildShimmer(context),
+      error: (e, _) => _buildError(context, e.toString()),
       data: (summary) {
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
-            return GridView.count(
-              crossAxisCount: crossAxisCount,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(
-                horizontal: DashboardTheme.spacingLg,
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _HeroBalanceCard(
+                totalLent: summary.totalLent,
+                outstanding: summary.outstandingBalance,
+                formattedTotal: service.formatCurrencyExact(summary.totalLent),
+                formattedOutstanding: service.formatCurrencyExact(
+                  summary.outstandingBalance,
+                ),
               ),
-              mainAxisSpacing: DashboardTheme.spacingMd,
-              crossAxisSpacing: DashboardTheme.spacingMd,
-              childAspectRatio: crossAxisCount == 4 ? 1.2 : 1.05,
-              children: [
-                StatTile(
-                  icon: Icons.account_balance_wallet_outlined,
-                  label: 'Total Lent',
-                  value: service.formatCompact(summary.totalLent),
-                  iconColor: DashboardTheme.primary,
-                  iconBackgroundColor: DashboardTheme.primarySurface,
-                  trend: 12.5,
-                ),
-                StatTile(
-                  icon: Icons.trending_up_rounded,
-                  label: 'Outstanding',
-                  value: service.formatCompact(summary.outstandingBalance),
-                  iconColor: DashboardTheme.warning,
-                  iconBackgroundColor: DashboardTheme.warningSurface,
-                ),
-                StatTile(
-                  icon: Icons.percent_rounded,
-                  label: 'Monthly Interest',
-                  value: service.formatCompact(summary.monthlyInterestEarned),
-                  iconColor: DashboardTheme.accent,
-                  iconBackgroundColor: DashboardTheme.accentSurface,
-                  trend: 8.2,
-                ),
-                StatTile(
-                  icon: Icons.speed_rounded,
-                  label: 'Collection Rate',
-                  value: '${summary.collectionRate.toStringAsFixed(1)}%',
-                  iconColor: DashboardTheme.success,
-                  iconBackgroundColor: DashboardTheme.successSurface,
-                  trend: summary.collectionRate >= 60 ? 3.1 : -2.4,
-                ),
-              ],
-            );
-          },
+              const SizedBox(height: AppTheme.spacingLg),
+              _SecondaryStatsCard(summary: summary, service: service),
+            ],
+          ),
         );
       },
     );
   }
 
-  Widget _buildShimmer() {
+  Widget _buildShimmer(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: Colors.grey.shade200,
       highlightColor: Colors.grey.shade50,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: DashboardTheme.spacingLg,
-        ),
-        child: GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: DashboardTheme.spacingMd,
-          crossAxisSpacing: DashboardTheme.spacingMd,
-          childAspectRatio: 1.05,
-          children: List.generate(
-            4,
-            (_) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              height: 180,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: DashboardTheme.radiusMd,
+                borderRadius: BorderRadius.circular(24),
               ),
             ),
-          ),
+            const SizedBox(height: AppTheme.spacingLg),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: AppTheme.radiusMd,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spacingLg),
+                Expanded(
+                  child: Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: AppTheme.radiusMd,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildError(String message) {
+  Widget _buildError(BuildContext context, String message) {
     return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: DashboardTheme.spacingLg,
-      ),
-      padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-      decoration: DashboardTheme.cardDecoration,
+      margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+      padding: EdgeInsets.all(AppTheme.spacingLg),
+      decoration: AppTheme.cardDecoration(context),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: DashboardTheme.danger),
-          const SizedBox(width: DashboardTheme.spacingSm),
+          Icon(Icons.error_outline, color: AppTheme.colors(context).danger),
+          SizedBox(width: AppTheme.spacingSm),
           Expanded(
             child: Text(
               'Failed to load summary: $message',
-              style: DashboardTheme.bodyMedium,
+              style: AppTheme.text(context).bodyMedium,
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _HeroBalanceCard extends StatelessWidget {
+  const _HeroBalanceCard({
+    required this.totalLent,
+    required this.outstanding,
+    required this.formattedTotal,
+    required this.formattedOutstanding,
+  });
+
+  final double totalLent;
+  final double outstanding;
+  final String formattedTotal;
+  final String formattedOutstanding;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = totalLent > 0
+        ? (totalLent - outstanding) / totalLent
+        : 0.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // A premium dark glossy gradient.
+    final gradientColors = [const Color(0xFF141E30), const Color(0xFF243B55)];
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradientColors,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Total Lent',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              Icon(
+                Icons.account_balance_wallet_rounded,
+                color: Colors.white.withValues(alpha: 0.7),
+                size: 20,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            formattedTotal,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              letterSpacing: -1,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Outstanding',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      formattedOutstanding,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Expanded(
+              //   child: Column(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     children: [
+              //       Text(
+              //         'Repaid',
+              //         style: TextStyle(
+              //           color: Colors.white.withValues(alpha: 0.6),
+              //           fontSize: 12,
+              //         ),
+              //       ),
+              //       const SizedBox(height: 4),
+              //       Text(
+              //         '${(progress * 100).toStringAsFixed(1)}%',
+              //         style: const TextStyle(
+              //           color: Colors.white,
+              //           fontSize: 16,
+              //           fontWeight: FontWeight.w600,
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Colors.greenAccent,
+              ),
+              minHeight: 6,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SecondaryStatsCard extends StatelessWidget {
+  const _SecondaryStatsCard({required this.summary, required this.service});
+
+  final DashboardSummary summary;
+  final DashboardService service;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dividerColor = isDark
+        ? Colors.white10
+        : Colors.black.withValues(alpha: 0.05);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingLg),
+      decoration: BoxDecoration(
+        color: AppTheme.colors(context).cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: dividerColor),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _MiniStat(
+              label: 'Interest',
+              value: service.formatCompact(summary.monthlyInterestEarned),
+              icon: Icons.percent_rounded,
+              color: AppTheme.colors(context).accent,
+            ),
+          ),
+          Container(width: 1, height: 40, color: dividerColor),
+          Expanded(
+            child: _MiniStat(
+              label: 'Collection',
+              value: '${summary.collectionRate.toStringAsFixed(0)}%',
+              icon: Icons.speed_rounded,
+              color: AppTheme.colors(context).success,
+            ),
+          ),
+          Container(width: 1, height: 40, color: dividerColor),
+          Expanded(
+            child: _MiniStat(
+              label: 'Loans',
+              value: '${summary.totalLoansCount}/${summary.activeLoansCount}',
+              icon: Icons.folder_open_rounded,
+              color: AppTheme.colors(context).info,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniStat extends StatelessWidget {
+  const _MiniStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 24),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: AppTheme.text(context).valueDisplay.copyWith(fontSize: 16),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: AppTheme.text(context).bodySmall,
+        ),
+      ],
     );
   }
 }

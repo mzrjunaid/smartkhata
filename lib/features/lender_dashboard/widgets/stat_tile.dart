@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 
 /// Reusable single-metric tile showing an icon, label, formatted value,
 /// and an optional trend indicator (↑ / ↓ with color).
@@ -29,60 +29,60 @@ class StatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-      decoration: DashboardTheme.cardDecoration,
+      padding: EdgeInsets.all(AppTheme.spacingLg),
+      decoration: AppTheme.cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           // ── Icon badge ────────────────────────────────────────────
           Container(
-            padding: const EdgeInsets.all(DashboardTheme.spacingSm),
+            padding: EdgeInsets.all(AppTheme.spacingSm),
             decoration: BoxDecoration(
-              color: iconBackgroundColor ?? DashboardTheme.primarySurface,
-              borderRadius: DashboardTheme.radiusSm,
+              color: iconBackgroundColor ?? AppTheme.colors(context).primarySurface,
+              borderRadius: AppTheme.radiusSm,
             ),
             child: Icon(
               icon,
               size: 20,
-              color: iconColor ?? DashboardTheme.primary,
+              color: iconColor ?? AppTheme.colors(context).primary,
             ),
           ),
 
-          const SizedBox(height: DashboardTheme.spacingMd),
+          SizedBox(height: AppTheme.spacingMd),
 
           // ── Label ─────────────────────────────────────────────────
-          Text(label, style: DashboardTheme.bodyMedium),
+          Text(label, style: AppTheme.text(context).bodyMedium),
 
-          const SizedBox(height: DashboardTheme.spacingXs),
+          SizedBox(height: AppTheme.spacingXs),
 
           // ── Value ─────────────────────────────────────────────────
           Text(
             value,
-            style: DashboardTheme.valueDisplay,
+            style: AppTheme.text(context).valueDisplay,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
 
           // ── Trend indicator (optional) ────────────────────────────
           if (trend != null) ...[
-            const SizedBox(height: DashboardTheme.spacingSm),
+            SizedBox(height: AppTheme.spacingSm),
             Row(
               children: [
                 Icon(
                   trend! >= 0 ? Icons.trending_up : Icons.trending_down,
                   size: 16,
                   color: trend! >= 0
-                      ? DashboardTheme.success
-                      : DashboardTheme.danger,
+                      ? AppTheme.colors(context).success
+                      : AppTheme.colors(context).danger,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   trendLabel ?? '${trend!.abs().toStringAsFixed(1)}%',
-                  style: DashboardTheme.bodySmall.copyWith(
+                  style: AppTheme.text(context).bodySmall.copyWith(
                     color: trend! >= 0
-                        ? DashboardTheme.success
-                        : DashboardTheme.danger,
+                        ? AppTheme.colors(context).success
+                        : AppTheme.colors(context).danger,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../../models/transaction_model.dart';
 import 'transaction_detail_dialog.dart';
 
@@ -14,11 +14,11 @@ class TransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMoneyIn = transaction.direction == TransactionDirection.moneyIn;
     final iconColor = isMoneyIn
-        ? DashboardTheme.success
-        : DashboardTheme.danger;
+        ? AppTheme.colors(context).success
+        : AppTheme.colors(context).danger;
     final iconBg = isMoneyIn
-        ? DashboardTheme.successSurface
-        : DashboardTheme.dangerSurface;
+        ? AppTheme.colors(context).successSurface
+        : AppTheme.colors(context).dangerSurface;
     final icon = isMoneyIn
         ? Icons.arrow_downward_rounded
         : Icons.arrow_upward_rounded;
@@ -37,23 +37,23 @@ class TransactionTile extends StatelessWidget {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: DashboardTheme.spacingLg,
-          vertical: DashboardTheme.spacingMd,
+        padding: EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingLg,
+          vertical: AppTheme.spacingMd,
         ),
         child: Row(
           children: [
             // ── Icon ──────────────────────────────────────────
             Container(
-              padding: const EdgeInsets.all(DashboardTheme.spacingSm),
+              padding: EdgeInsets.all(AppTheme.spacingSm),
               decoration: BoxDecoration(
                 color: iconBg,
-                borderRadius: DashboardTheme.radiusSm,
+                borderRadius: AppTheme.radiusSm,
               ),
               child: Icon(icon, size: 20, color: iconColor),
             ),
 
-            const SizedBox(width: DashboardTheme.spacingMd),
+            SizedBox(width: AppTheme.spacingMd),
 
             // ── Details ───────────────────────────────────────────────
             Expanded(
@@ -62,19 +62,19 @@ class TransactionTile extends StatelessWidget {
                 children: [
                   Text(
                     transaction.counterpartyName,
-                    style: DashboardTheme.headingSmall,
+                    style: AppTheme.text(context).headingSmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Row(
                     children: [
                       Text(
                         transaction.category,
-                        style: DashboardTheme.bodyMedium,
+                        style: AppTheme.text(context).bodyMedium,
                       ),
-                      const SizedBox(width: 6),
-                      _buildStatusBadge(),
+                      SizedBox(width: 6),
+                      _buildStatusBadge(context),
                     ],
                   ),
                 ],
@@ -87,16 +87,16 @@ class TransactionTile extends StatelessWidget {
               children: [
                 Text(
                   isMoneyIn ? '+$formattedAmount' : '-$formattedAmount',
-                  style: DashboardTheme.headingSmall.copyWith(
+                  style: AppTheme.text(context).headingSmall.copyWith(
                     color: isMoneyIn
-                        ? DashboardTheme.success
-                        : DashboardTheme.textPrimary,
+                        ? AppTheme.colors(context).success
+                        : AppTheme.colors(context).textPrimary,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(
                   DateFormat('h:mm a').format(transaction.date),
-                  style: DashboardTheme.bodySmall,
+                  style: AppTheme.text(context).bodySmall,
                 ),
               ],
             ),
@@ -106,15 +106,15 @@ class TransactionTile extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge() {
+  Widget _buildStatusBadge(BuildContext context) {
     Color color;
     switch (transaction.status) {
       case 'pending':
-        color = DashboardTheme.warning;
+        color = AppTheme.colors(context).warning;
         break;
       case 'rejected':
       case 'missed':
-        color = DashboardTheme.danger;
+        color = AppTheme.colors(context).danger;
         break;
       case 'confirmed':
       case 'active':

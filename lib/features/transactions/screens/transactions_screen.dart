@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/widgets/dashboard_app_bar.dart';
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../providers/transactions_providers.dart';
 import '../models/transaction_model.dart';
 import 'widgets/transaction_summary_card.dart';
@@ -18,7 +18,7 @@ class TransactionsScreen extends ConsumerWidget {
     final transactionsAsync = ref.watch(filteredTransactionsProvider);
 
     return Scaffold(
-      backgroundColor: DashboardTheme.surface,
+      backgroundColor: AppTheme.colors(context).surface,
       body: Column(
         children: [
           const DashboardAppBar(
@@ -35,20 +35,20 @@ class TransactionsScreen extends ConsumerWidget {
               error: (e, _) => Center(child: Text('Error: $e')),
               data: (transactions) {
                 if (transactions.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
                       'No transactions found for the selected filters.',
-                      style: DashboardTheme.bodyMedium,
+                      style: AppTheme.text(context).bodyMedium,
                     ),
                   );
                 }
 
                 // Group by date (YYYY-MM-DD)
                 final grouped = _groupByDate(transactions);
-                final listItems = _buildListItems(grouped);
+                final listItems = _buildListItems(context, grouped);
 
                 return RefreshIndicator(
-                  color: DashboardTheme.primary,
+                  color: AppTheme.colors(context).primary,
                   onRefresh: () async {
                     ref.invalidate(allTransactionsProvider);
                     await ref.read(allTransactionsProvider.future);
@@ -83,7 +83,7 @@ class TransactionsScreen extends ConsumerWidget {
     return map;
   }
 
-  List<Widget> _buildListItems(Map<String, List<TransactionModel>> grouped) {
+  List<Widget> _buildListItems(BuildContext context, Map<String, List<TransactionModel>> grouped) {
     final items = <Widget>[];
     
     // keys are already sorted descending because transactions are sorted
@@ -97,10 +97,10 @@ class TransactionsScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
           child: Text(
             _formatDateHeader(DateTime.parse(dateStr)),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
-              color: Colors.grey,
+              color: AppTheme.colors(context).textSecondary,
               letterSpacing: 0.5,
             ),
           ),

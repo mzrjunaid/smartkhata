@@ -53,13 +53,38 @@ class TransactionsRepository {
           ? (borrower?['full_name'] as String? ?? 'Unknown') 
           : (lender?['full_name'] as String? ?? 'Unknown');
       
+      String category = 'Loan';
+      switch (status) {
+        case 'draft':
+          category = 'Draft Loan';
+          break;
+        case 'pending_disbursement':
+          category = 'Pending Disbursement';
+          break;
+        case 'active':
+          category = 'Loan Disbursed';
+          break;
+        case 'completed':
+          category = 'Loan Completed';
+          break;
+        case 'cancelled':
+          category = 'Loan Cancelled';
+          break;
+        case 'defaulted':
+          category = 'Loan Defaulted';
+          break;
+        case 'overdue':
+          category = 'Loan Overdue';
+          break;
+      }
+
       transactions.add(TransactionModel(
         id: 'loan_${loan['id']}',
         amount: (loan['principal_amount'] as num).toDouble(),
         date: DateTime.parse(loan['created_at'] as String),
         counterpartyName: counterpartyName,
         direction: isLender ? TransactionDirection.moneyOut : TransactionDirection.moneyIn,
-        category: 'Loan Disbursed',
+        category: category,
         status: status,
         notes: loan['note'] as String?,
       ));

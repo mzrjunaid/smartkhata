@@ -4,7 +4,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/dashboard_providers.dart';
-import '../theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import 'activity_tile.dart';
 import 'section_header.dart';
 
@@ -15,9 +15,10 @@ class PendingConfirmationsCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pendingAsync = ref.watch(pendingConfirmationsProvider);
     final service = ref.watch(dashboardServiceProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return pendingAsync.when(
-      loading: () => _buildShimmer(),
+      loading: () => _buildShimmer(context),
       error: (e, _) => const SizedBox.shrink(),
       data: (activities) {
         if (activities.isEmpty) {
@@ -32,11 +33,16 @@ class PendingConfirmationsCard extends ConsumerWidget {
               onViewAll: null, // No view all needed for pending
             ),
             Container(
-              margin: const EdgeInsets.symmetric(
-                horizontal: DashboardTheme.spacingLg,
+              margin: EdgeInsets.symmetric(
+                horizontal: AppTheme.spacingLg,
               ),
-              decoration: DashboardTheme.cardDecoration.copyWith(
-                border: Border.all(color: DashboardTheme.warning, width: 1.5),
+              decoration: BoxDecoration(
+                color: AppTheme.colors(context).cardBackground,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppTheme.colors(context).warning.withValues(alpha: 0.5),
+                  width: 1.5,
+                ),
               ),
               child: Column(
                 children: [
@@ -68,11 +74,11 @@ class PendingConfirmationsCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildShimmer() {
+  Widget _buildShimmer(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: DashboardTheme.spacingLg,
-        vertical: DashboardTheme.spacingMd,
+        horizontal: AppTheme.spacingLg,
+        vertical: AppTheme.spacingMd,
       ),
       child: Shimmer.fromColors(
         baseColor: Colors.grey.shade200,
@@ -81,7 +87,7 @@ class PendingConfirmationsCard extends ConsumerWidget {
           height: 80,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: DashboardTheme.radiusMd,
+            borderRadius: AppTheme.radiusMd,
           ),
         ),
       ),

@@ -28,7 +28,8 @@ class LoanUsersRepository {
   }
 
   Future<List<ConnectionModel>> fetchActiveConnections(String lenderId) async {
-    final response = await _client
+    // 1. Fetch active and pending connections
+    final connectionsResponse = await _client
         .from('connections')
         .select('''
           id,
@@ -45,11 +46,83 @@ class LoanUsersRepository {
           loans ( * )
         ''')
         .eq('lender_profile_id', lenderId)
-        .eq('status', 'active');
+        .inFilter('status', ['active', 'pending']);
 
-    return (response as List).map<ConnectionModel>((json) {
+    // 2. Fetch pending invitations
+    final invitationsResponse = await _client
+        .from('invitations')
+        .select('''
+          id,
+          profile_id,
+          status,
+          profiles!invitations_profile_id_fkey (
+            full_name,
+            cnic,
+            phone,
+            email,
+            claim_status
+          )
+        ''')
+        .eq('invited_by', lenderId)
+        .eq('status', 'pending');
+
+    final activeConnections = (connectionsResponse as List).map<ConnectionModel>((json) {
       return ConnectionModel.fromJson(json as Map<String, dynamic>);
     }).toList();
+
+    final pendingInvitationsList = invitationsResponse as List;
+    final pendingBorrowerIds = pendingInvitationsList
+        .map((inv) => inv['profile_id'] as String?)
+        .where((id) => id != null)
+        .toSet();
+
+    // 3. If an active connection has a pending invitation, override its status to 'pending'
+    for (int i = 0; i < activeConnections.length; i++) {
+      final conn = activeConnections[i];
+      if (conn.borrowerProfileId != null && pendingBorrowerIds.contains(conn.borrowerProfileId)) {
+        activeConnections[i] = ConnectionModel(
+          id: conn.id,
+          borrowerProfileId: conn.borrowerProfileId,
+          status: 'pending', // OVERRIDE
+          borrowerName: conn.borrowerName,
+          borrowerCnic: conn.borrowerCnic,
+          borrowerPhone: conn.borrowerPhone,
+          borrowerEmail: conn.borrowerEmail,
+          claimStatus: conn.claimStatus,
+          lenderVerifiedAt: conn.lenderVerifiedAt,
+          loans: conn.loans,
+        );
+      }
+    }
+
+    // 4. Map pure pending invitations (those WITHOUT an existing connection)
+    final existingConnectionBorrowerIds = activeConnections
+        .map((c) => c.borrowerProfileId)
+        .where((id) => id != null)
+        .toSet();
+
+    final purePendingInvitations = pendingInvitationsList
+        .where((inv) {
+          final profileId = inv['profile_id'] as String?;
+          return profileId == null || !existingConnectionBorrowerIds.contains(profileId);
+        })
+        .map<ConnectionModel>((json) {
+      final profile = json['profiles'] as Map<String, dynamic>?;
+      return ConnectionModel(
+        id: json['id'] as String,
+        borrowerProfileId: json['profile_id'] as String?,
+        borrowerName: profile?['full_name'] as String? ?? 'Unknown',
+        borrowerCnic: profile?['cnic'] as String? ?? 'Unknown',
+        borrowerPhone: profile?['phone'] as String?,
+        borrowerEmail: profile?['email'] as String?,
+        status: 'pending',
+        claimStatus: profile?['claim_status'] as String? ?? 'invited',
+        lenderVerifiedAt: null,
+        loans: const [],
+      );
+    }).toList();
+
+    return [...activeConnections, ...purePendingInvitations];
   }
 
   /// Fetches connections where the given profile is the **borrower**.

@@ -72,6 +72,7 @@ class DashboardRepository {
       totalLent: totalLent,
       totalReceived: totalReceived,
       outstandingBalance: outstandingBalance > 0 ? outstandingBalance : 0,
+      totalLoansCount: loans.length,
       activeLoansCount: activeLoansCount,
       overdueCount: overdueCount,
       monthlyInterestEarned: monthlyInterestEarned,

@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 import '../../lender_dashboard/providers/dashboard_providers.dart';
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../models/new_loan_form_data.dart';
 import '../providers/new_loan_providers.dart';
 import '../services/new_loan_service.dart';
@@ -96,11 +96,11 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Loan created successfully!'),
-            backgroundColor: DashboardTheme.success,
+            content: Text('Loan created successfully!'),
+            backgroundColor: AppTheme.colors(context).success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: DashboardTheme.radiusSm,
+              borderRadius: AppTheme.radiusSm,
             ),
           ),
         );
@@ -146,7 +146,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
     final connectionsAsync = ref.watch(lenderConnectionsProvider);
 
     return Scaffold(
-      backgroundColor: DashboardTheme.cardBackground,
+      backgroundColor: AppTheme.colors(context).cardBackground,
       body: SingleChildScrollView(
         child: FormBuilder(
           key: _formKey,
@@ -155,11 +155,11 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
             children: [
               // ── Header ────────────────────────────────────────────
               const LoanFormHeader(),
-              const SizedBox(height: DashboardTheme.spacingXl),
+              const SizedBox(height: AppTheme.spacingXl),
 
               // ── Borrower Flow Selector ────────────────────────────
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: DashboardTheme.spacingLg),
+                padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
                 child: SegmentedButton<_BorrowerFlow>(
                   segments: const [
                     ButtonSegment(
@@ -181,30 +181,30 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                   },
                 ),
               ),
-              const SizedBox(height: DashboardTheme.spacingXl),
+              const SizedBox(height: AppTheme.spacingXl),
 
               // ── Borrower Details Section ──────────────────────────
               _SectionTitle(
                 icon: Icons.person_outline,
                 title: 'Borrower Details',
               ),
-              const SizedBox(height: DashboardTheme.spacingMd),
+              const SizedBox(height: AppTheme.spacingMd),
 
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: DashboardTheme.spacingLg),
+                padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
                 child: _flow == _BorrowerFlow.existing
                     ? connectionsAsync.when(
                         data: (connections) {
                           if (connections.isEmpty) {
                             return Container(
-                              padding: const EdgeInsets.all(DashboardTheme.spacingLg),
+                              padding: EdgeInsets.all(AppTheme.spacingLg),
                               decoration: BoxDecoration(
-                                color: DashboardTheme.primarySurface,
-                                borderRadius: DashboardTheme.radiusMd,
+                                color: AppTheme.colors(context).primarySurface,
+                                borderRadius: AppTheme.radiusMd,
                               ),
                               child: Text(
                                 'No active connections found. Please select "New Borrower" to invite someone.',
-                                style: DashboardTheme.bodyMedium.copyWith(color: DashboardTheme.primary),
+                                style: AppTheme.text(context).bodyMedium.copyWith(color: AppTheme.colors(context).primary),
                               ),
                             );
                           }
@@ -213,9 +213,9 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                             decoration: InputDecoration(
                               labelText: 'Select Borrower',
                               filled: true,
-                              fillColor: DashboardTheme.surface,
+                              fillColor: AppTheme.colors(context).surface,
                               border: OutlineInputBorder(
-                                borderRadius: DashboardTheme.radiusMd,
+                                borderRadius: AppTheme.radiusMd,
                                 borderSide: BorderSide.none,
                               ),
                             ),
@@ -228,7 +228,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                             }).toList(),
                           );
                         },
-                        loading: () => const Center(child: CircularProgressIndicator()),
+                        loading: () => Center(child: CircularProgressIndicator()),
                         error: (e, st) => Text('Error loading connections: $e'),
                       )
                     : Column(
@@ -269,17 +269,17 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                       ),
               ),
 
-              const SizedBox(height: DashboardTheme.spacingLg),
+              SizedBox(height: AppTheme.spacingLg),
 
               // ── Loan Details Section ──────────────────────────────
               _SectionTitle(
                 icon: Icons.account_balance_outlined,
                 title: 'Loan Details',
               ),
-              const SizedBox(height: DashboardTheme.spacingMd),
+              SizedBox(height: AppTheme.spacingMd),
 
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: DashboardTheme.spacingLg),
+                padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
                 child: Column(
                   children: [
                     StyledFormField(
@@ -307,21 +307,21 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                             decoration: InputDecoration(
                               labelText: 'Interest Type',
                               filled: true,
-                              fillColor: DashboardTheme.surface,
+                              fillColor: AppTheme.colors(context).surface,
                               border: OutlineInputBorder(
-                                borderRadius: DashboardTheme.radiusMd,
+                                borderRadius: AppTheme.radiusMd,
                                 borderSide: BorderSide.none,
                               ),
                             ),
                             onChanged: (_) => _updatePreview(),
-                            items: const [
+                            items: [
                               DropdownMenuItem(value: 'none', child: Text('No Interest')),
                               DropdownMenuItem(value: 'flat', child: Text('Flat Rate')),
                               DropdownMenuItem(value: 'reducing', child: Text('Reducing Balance')),
                             ],
                           ),
                         ),
-                        const SizedBox(width: DashboardTheme.spacingMd),
+                        SizedBox(width: AppTheme.spacingMd),
                         Expanded(
                           flex: 1,
                           child: StyledFormField(
@@ -330,7 +330,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                             hint: '12',
                             suffixText: '%',
                             enabled: _interestType != 'none',
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            keyboardType: TextInputType.numberWithOptions(decimal: true),
                             onChanged: (_) => _updatePreview(),
                             validator: _interestType == 'none'
                                 ? null
@@ -344,7 +344,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: DashboardTheme.spacingSm),
+                    SizedBox(height: AppTheme.spacingSm),
                     Row(
                       children: [
                         Expanded(
@@ -356,16 +356,16 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                             decoration: InputDecoration(
                               labelText: 'Disbursed Date',
                               filled: true,
-                              fillColor: DashboardTheme.surface,
+                              fillColor: AppTheme.colors(context).surface,
                               border: OutlineInputBorder(
-                                borderRadius: DashboardTheme.radiusMd,
+                                borderRadius: AppTheme.radiusMd,
                                 borderSide: BorderSide.none,
                               ),
                             ),
                             onChanged: (_) => _updatePreview(),
                           ),
                         ),
-                        const SizedBox(width: DashboardTheme.spacingMd),
+                        SizedBox(width: AppTheme.spacingMd),
                         Expanded(
                           child: FormBuilderDateTimePicker(
                             name: 'due_date',
@@ -374,9 +374,9 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                             decoration: InputDecoration(
                               labelText: 'Due Date',
                               filled: true,
-                              fillColor: DashboardTheme.surface,
+                              fillColor: AppTheme.colors(context).surface,
                               border: OutlineInputBorder(
-                                borderRadius: DashboardTheme.radiusMd,
+                                borderRadius: AppTheme.radiusMd,
                                 borderSide: BorderSide.none,
                               ),
                             ),
@@ -389,7 +389,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                 ),
               ),
 
-              const SizedBox(height: DashboardTheme.spacingXl),
+              SizedBox(height: AppTheme.spacingXl),
 
               // ── Live Summary Preview ──────────────────────────────
               LoanSummaryPreview(
@@ -400,11 +400,11 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                 service: service,
               ),
 
-              const SizedBox(height: DashboardTheme.spacingXl),
+              SizedBox(height: AppTheme.spacingXl),
 
               // ── Notes Section ─────────────────────────────────────
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: DashboardTheme.spacingLg),
+                padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
                 child: StyledFormField(
                   name: 'notes',
                   label: 'Notes (optional)',
@@ -417,26 +417,26 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
               // ── Error message ─────────────────────────────────────
               if (_error != null)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: DashboardTheme.spacingLg),
+                  padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(DashboardTheme.spacingMd),
+                    padding: EdgeInsets.all(AppTheme.spacingMd),
                     decoration: BoxDecoration(
-                      color: DashboardTheme.dangerSurface,
-                      borderRadius: DashboardTheme.radiusSm,
+                      color: AppTheme.colors(context).dangerSurface,
+                      borderRadius: AppTheme.radiusSm,
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
-                          color: DashboardTheme.danger,
+                          color: AppTheme.colors(context).danger,
                           size: 18,
                         ),
-                        const SizedBox(width: DashboardTheme.spacingSm),
+                        SizedBox(width: AppTheme.spacingSm),
                         Expanded(
                           child: Text(
                             _error!,
-                            style: DashboardTheme.bodyMedium.copyWith(color: DashboardTheme.danger),
+                            style: AppTheme.text(context).bodyMedium.copyWith(color: AppTheme.colors(context).danger),
                           ),
                         ),
                       ],
@@ -444,22 +444,22 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                   ),
                 ),
 
-              const SizedBox(height: DashboardTheme.spacingXl),
+              SizedBox(height: AppTheme.spacingXl),
 
               // ── Submit Button ─────────────────────────────────────
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: DashboardTheme.spacingLg),
+                padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
                 child: SizedBox(
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
                     onPressed: _loading ? null : _submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: DashboardTheme.primary,
+                      backgroundColor: AppTheme.colors(context).primary,
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: DashboardTheme.primary.withValues(alpha: 0.6),
+                      disabledBackgroundColor: AppTheme.colors(context).primary.withValues(alpha: 0.6),
                       shape: RoundedRectangleBorder(
-                        borderRadius: DashboardTheme.radiusMd,
+                        borderRadius: AppTheme.radiusMd,
                       ),
                     ),
                     child: _loading
@@ -480,7 +480,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                 ),
               ),
 
-              const SizedBox(height: DashboardTheme.spacingXxl),
+              const SizedBox(height: 120),
             ],
           ),
         ),
@@ -498,19 +498,19 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: DashboardTheme.spacingLg),
+      padding: EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(6),
+            padding: EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: DashboardTheme.primarySurface,
-              borderRadius: DashboardTheme.radiusSm,
+              color: AppTheme.colors(context).primarySurface,
+              borderRadius: AppTheme.radiusSm,
             ),
-            child: Icon(icon, size: 16, color: DashboardTheme.primary),
+            child: Icon(icon, size: 16, color: AppTheme.colors(context).primary),
           ),
-          const SizedBox(width: DashboardTheme.spacingSm),
-          Text(title, style: DashboardTheme.headingMedium),
+          SizedBox(width: AppTheme.spacingSm),
+          Text(title, style: AppTheme.text(context).headingMedium),
         ],
       ),
     );

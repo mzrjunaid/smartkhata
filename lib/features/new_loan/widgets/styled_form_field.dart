@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 
 /// Reusable themed form field wrapper that applies consistent styling
 /// from [DashboardTheme] to every [FormBuilderTextField].
@@ -44,7 +44,7 @@ class StyledFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: DashboardTheme.spacingLg),
+      padding: EdgeInsets.only(bottom: AppTheme.spacingLg),
       child: FormBuilderTextField(
         name: name,
         initialValue: initialValue,
@@ -54,60 +54,60 @@ class StyledFormField extends StatelessWidget {
         maxLines: maxLines,
         onChanged: onChanged,
         enabled: enabled,
-        style: DashboardTheme.bodyLarge,
+        style: AppTheme.text(context).bodyLarge,
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          labelStyle: DashboardTheme.bodyMedium,
-          hintStyle: DashboardTheme.bodyMedium.copyWith(
-            color: DashboardTheme.textTertiary,
+          labelStyle: AppTheme.text(context).bodyMedium,
+          hintStyle: AppTheme.text(context).bodyMedium.copyWith(
+            color: AppTheme.colors(context).textTertiary,
           ),
           prefixIcon: prefixIcon != null
-              ? Icon(prefixIcon, color: DashboardTheme.textSecondary, size: 20)
+              ? Icon(prefixIcon, color: AppTheme.colors(context).textSecondary, size: 20)
               : null,
           prefixText: prefixText,
-          prefixStyle: DashboardTheme.bodyLarge.copyWith(
-            color: DashboardTheme.textSecondary,
+          prefixStyle: AppTheme.text(context).bodyLarge.copyWith(
+            color: AppTheme.colors(context).textSecondary,
           ),
           suffixText: suffixText,
-          suffixStyle: DashboardTheme.labelBold,
+          suffixStyle: AppTheme.text(context).labelBold,
           filled: true,
-          fillColor: DashboardTheme.surface,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: DashboardTheme.spacingLg,
-            vertical: DashboardTheme.spacingMd,
+          fillColor: AppTheme.colors(context).surface,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingLg,
+            vertical: AppTheme.spacingMd,
           ),
           border: OutlineInputBorder(
-            borderRadius: DashboardTheme.radiusMd,
+            borderRadius: AppTheme.radiusMd,
             borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: DashboardTheme.radiusMd,
+            borderRadius: AppTheme.radiusMd,
             borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: DashboardTheme.radiusMd,
-            borderSide: const BorderSide(
-              color: DashboardTheme.primary,
+            borderRadius: AppTheme.radiusMd,
+            borderSide: BorderSide(
+              color: AppTheme.colors(context).primary,
               width: 1.5,
             ),
           ),
           errorBorder: OutlineInputBorder(
-            borderRadius: DashboardTheme.radiusMd,
-            borderSide: const BorderSide(
-              color: DashboardTheme.danger,
+            borderRadius: AppTheme.radiusMd,
+            borderSide: BorderSide(
+              color: AppTheme.colors(context).danger,
               width: 1.5,
             ),
           ),
           focusedErrorBorder: OutlineInputBorder(
-            borderRadius: DashboardTheme.radiusMd,
-            borderSide: const BorderSide(
-              color: DashboardTheme.danger,
+            borderRadius: AppTheme.radiusMd,
+            borderSide: BorderSide(
+              color: AppTheme.colors(context).danger,
               width: 1.5,
             ),
           ),
-          errorStyle: DashboardTheme.bodySmall.copyWith(
-            color: DashboardTheme.danger,
+          errorStyle: AppTheme.text(context).bodySmall.copyWith(
+            color: AppTheme.colors(context).danger,
           ),
         ),
       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../../new_loan/models/connection_model.dart';
 import '../../new_loan/models/loan_model.dart';
 import '../data/loan_users_repository.dart';
@@ -25,17 +25,17 @@ class BorrowerProfileScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: DashboardTheme.surface,
+      backgroundColor: AppTheme.colors(context).surface,
       body: Column(
         children: [
-          const DashboardAppBar(
+          DashboardAppBar(
             title: 'Borrower Profile',
             showBackButton: true,
           ),
           Expanded(
             child: connectionAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: DashboardTheme.primary),
+              loading: () => Center(
+                child: CircularProgressIndicator(color: AppTheme.colors(context).primary),
               ),
               error: (err, stack) =>
                   Center(child: Text('Error loading profile: $err')),
@@ -46,14 +46,14 @@ class BorrowerProfileScreen extends ConsumerWidget {
                     : const AsyncValue<CreditScoreModel?>.data(null);
 
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.all(DashboardTheme.spacingLg),
+                  padding: const EdgeInsets.all(AppTheme.spacingLg),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _buildHeader(connection, creditScoreAsync),
-                      const SizedBox(height: DashboardTheme.spacingXl),
+                      _buildHeader(context, connection, creditScoreAsync),
+                      const SizedBox(height: AppTheme.spacingXl),
 
-                      _buildLoansSection(
+                      _buildLoansSection(context, 
                         'Active Loans',
                         connection.loans
                             .where(
@@ -63,9 +63,9 @@ class BorrowerProfileScreen extends ConsumerWidget {
                             .toList(),
                         repaymentsAsync.value ?? [],
                       ),
-                      const SizedBox(height: DashboardTheme.spacingXl),
+                      const SizedBox(height: AppTheme.spacingXl),
 
-                      _buildLoansSection(
+                      _buildLoansSection(context, 
                         'Previous Loans',
                         connection.loans
                             .where(
@@ -75,13 +75,13 @@ class BorrowerProfileScreen extends ConsumerWidget {
                             .toList(),
                         repaymentsAsync.value ?? [],
                       ),
-                      const SizedBox(height: DashboardTheme.spacingXl),
+                      const SizedBox(height: AppTheme.spacingXl),
 
                       _buildRepaymentsSection(context, repaymentsAsync),
-                      const SizedBox(height: DashboardTheme.spacingXl),
+                      const SizedBox(height: AppTheme.spacingXl),
 
                       _buildManagementSection(context, ref, connection),
-                      const SizedBox(height: 100), // padding for scroll
+                      const SizedBox(height: 120), // padding for scroll
                     ],
                   ),
                 );
@@ -93,65 +93,65 @@ class BorrowerProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(
+  Widget _buildHeader(BuildContext context, 
     ConnectionModel connection,
     AsyncValue<CreditScoreModel?> creditScoreAsync,
   ) {
     return Container(
-      padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-      decoration: DashboardTheme.cardDecoration,
+      padding: EdgeInsets.all(AppTheme.spacingLg),
+      decoration: AppTheme.cardDecoration(context),
       child: Column(
         children: [
           Row(
             children: [
               CircleAvatar(
                 radius: 40,
-                backgroundColor: DashboardTheme.primary.withValues(alpha: 0.1),
+                backgroundColor: AppTheme.colors(context).primary.withValues(alpha: 0.1),
                 child: Text(
                   connection.borrowerName.substring(0, 1).toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: DashboardTheme.primary,
+                    color: AppTheme.colors(context).primary,
                   ),
                 ),
               ),
-              const SizedBox(width: DashboardTheme.spacingLg),
+              SizedBox(width: AppTheme.spacingLg),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       connection.borrowerName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: DashboardTheme.textPrimary,
+                        color: AppTheme.colors(context).textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'CNIC: ${connection.borrowerCnic}',
-                      style: DashboardTheme.bodyMedium,
+                      style: AppTheme.text(context).bodyMedium,
                     ),
                     if (connection.borrowerPhone != null)
                       Text(
                         'Phone: ${connection.borrowerPhone}',
-                        style: DashboardTheme.bodyMedium,
+                        style: AppTheme.text(context).bodyMedium,
                       ),
                     if (connection.borrowerEmail != null)
                       Text(
                         'Email: ${connection.borrowerEmail}',
-                        style: DashboardTheme.bodyMedium,
+                        style: AppTheme.text(context).bodyMedium,
                       ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: DashboardTheme.spacingLg),
+          const SizedBox(height: AppTheme.spacingLg),
           const Divider(),
-          const SizedBox(height: DashboardTheme.spacingMd),
+          const SizedBox(height: AppTheme.spacingMd),
           creditScoreAsync.when(
             loading: () => const CircularProgressIndicator(),
             error: (_, _) => const Text('Failed to load score'),
@@ -162,29 +162,29 @@ class BorrowerProfileScreen extends ConsumerWidget {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildScoreItem(
+                  _buildScoreItem(context, 
                     'Score',
                     scoreModel.score.toString(),
                     scoreModel.score >= 700
-                        ? Colors.green
+                        ? AppTheme.colors(context).success
                         : (scoreModel.score >= 500
-                              ? Colors.orange
-                              : Colors.red),
+                              ? AppTheme.colors(context).warning
+                              : AppTheme.colors(context).danger),
                   ),
-                  _buildScoreItem(
+                  _buildScoreItem(context, 
                     'Total Loans',
                     scoreModel.totalLoans.toString(),
-                    DashboardTheme.primary,
+                    AppTheme.colors(context).primary,
                   ),
-                  _buildScoreItem(
+                  _buildScoreItem(context, 
                     'On Time',
                     scoreModel.onTimeCount.toString(),
-                    Colors.green,
+                    AppTheme.colors(context).success,
                   ),
-                  _buildScoreItem(
+                  _buildScoreItem(context, 
                     'Late/Default',
                     '${scoreModel.lateCount}/${scoreModel.defaultCount}',
-                    Colors.red,
+                    AppTheme.colors(context).danger,
                   ),
                 ],
               );
@@ -195,7 +195,7 @@ class BorrowerProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildScoreItem(String label, String value, Color color) {
+  Widget _buildScoreItem(BuildContext context, String label, String value, Color color) {
     return Column(
       children: [
         Text(
@@ -208,16 +208,16 @@ class BorrowerProfileScreen extends ConsumerWidget {
         ),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: DashboardTheme.textSecondary,
+            color: AppTheme.colors(context).textSecondary,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildLoansSection(
+  Widget _buildLoansSection(BuildContext context, 
     String title,
     List<LoanModel> loans,
     List<RepaymentModel> allRepayments,
@@ -227,17 +227,17 @@ class BorrowerProfileScreen extends ConsumerWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: DashboardTheme.textPrimary,
+            color: AppTheme.colors(context).textPrimary,
           ),
         ),
-        const SizedBox(height: DashboardTheme.spacingMd),
+        SizedBox(height: AppTheme.spacingMd),
         if (loans.isEmpty)
-          const Text(
+          Text(
             'No loans found.',
-            style: TextStyle(color: DashboardTheme.textSecondary),
+            style: TextStyle(color: AppTheme.colors(context).textSecondary),
           )
         else
           ...loans.map((loan) {
@@ -259,179 +259,177 @@ class BorrowerProfileScreen extends ConsumerWidget {
                 : 0.0;
 
             return Container(
-              margin: const EdgeInsets.only(bottom: DashboardTheme.spacingMd),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-                border: Border.all(color: Colors.grey.shade100),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              margin: EdgeInsets.only(bottom: AppTheme.spacingMd),
+              decoration: AppTheme.cardDecoration(context),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    context.push('/repayments/$connectionId');
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.all(AppTheme.spacingLg),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: DashboardTheme.primary.withValues(
-                                  alpha: 0.1,
+                            Row(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.colors(context).primary.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.account_balance_wallet,
+                                    color: AppTheme.colors(context).primary,
+                                    size: 20,
+                                  ),
                                 ),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.account_balance_wallet,
-                                color: DashboardTheme.primary,
-                                size: 20,
-                              ),
+                                SizedBox(width: AppTheme.spacingMd),
+                                Text(
+                                  'Personal Loan',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.colors(context).textSecondary,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: DashboardTheme.spacingMd),
-                            const Text(
-                              'Personal Loan',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: DashboardTheme.textSecondary,
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: loan.status == 'active'
+                                    ? AppTheme.colors(context).accentSurface
+                                    : (loan.status == 'completed' ||
+                                              loan.status == 'paid'
+                                          ? AppTheme.colors(context).successSurface
+                                          : AppTheme.colors(context).dangerSurface),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                loan.status?.toUpperCase() ?? 'UNKNOWN',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: loan.status == 'active'
+                                      ? AppTheme.colors(context).accent
+                                      : (loan.status == 'completed' ||
+                                                loan.status == 'paid'
+                                            ? AppTheme.colors(context).success
+                                            : AppTheme.colors(context).danger),
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: loan.status == 'active'
-                                ? Colors.blue.shade50
-                                : (loan.status == 'completed' ||
-                                          loan.status == 'paid'
-                                      ? Colors.green.shade50
-                                      : Colors.red.shade50),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            loan.status?.toUpperCase() ?? 'UNKNOWN',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: loan.status == 'active'
-                                  ? Colors.blue
-                                  : (loan.status == 'completed' ||
-                                            loan.status == 'paid'
-                                        ? Colors.green
-                                        : Colors.red),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: DashboardTheme.spacingLg),
-                    const Text(
-                      'Total Expected Amount',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: DashboardTheme.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${loan.currency} ${totalPayment.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: DashboardTheme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: DashboardTheme.spacingLg),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Repayment Progress',
+                        SizedBox(height: AppTheme.spacingLg),
+                        Text(
+                          'Total Expected Amount',
                           style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: DashboardTheme.textSecondary,
                             fontSize: 12,
+                            color: AppTheme.colors(context).textSecondary,
                           ),
                         ),
+                        const SizedBox(height: 4),
                         Text(
-                          '${(progress * 100).toStringAsFixed(0)}%',
-                          style: const TextStyle(
+                          '${loan.currency} ${totalPayment.toStringAsFixed(0)}',
+                          style: TextStyle(
+                            fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: DashboardTheme.primary,
-                            fontSize: 12,
+                            color: AppTheme.colors(context).textPrimary,
                           ),
+                        ),
+                        SizedBox(height: AppTheme.spacingLg),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Repayment Progress',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.colors(context).textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              '${(progress * 100).toStringAsFixed(0)}%',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.colors(context).primary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            backgroundColor: AppTheme.colors(context).primarySurface,
+                            color: AppTheme.colors(context).primary,
+                            minHeight: 6,
+                          ),
+                        ),
+                        const SizedBox(height: AppTheme.spacingMd),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Paid: ${loan.currency} ${totalPaid.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                color: AppTheme.colors(context).success,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              'Remaining: ${loan.currency} ${(totalPayment - totalPaid).toStringAsFixed(0)}',
+                              style: TextStyle(
+                                color: AppTheme.colors(context).warning,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppTheme.spacingLg),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildLoanDetailColumn(context, 
+                              'Principal',
+                              '${loan.currency} ${loan.principal}',
+                            ),
+                            _buildLoanDetailColumn(context, 
+                              'Rate',
+                              '${loan.interestRate}% (${loan.interestType})',
+                            ),
+                            if (totalMonths > 0)
+                              _buildLoanDetailColumn(context, 
+                                'Period',
+                                '$totalMonths Months\n($remainingMonths left)',
+                              )
+                            else if (loan.dueDate != null)
+                              _buildLoanDetailColumn(context, 
+                                'Due Date',
+                                DateFormat('MMM dd, yyyy').format(loan.dueDate!),
+                              ),
+                          ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        backgroundColor: DashboardTheme.primarySurface,
-                        color: DashboardTheme.primary,
-                        minHeight: 6,
-                      ),
-                    ),
-                    const SizedBox(height: DashboardTheme.spacingMd),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Paid: ${loan.currency} ${totalPaid.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                            color: DashboardTheme.success,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
-                        ),
-                        Text(
-                          'Remaining: ${loan.currency} ${(totalPayment - totalPaid).toStringAsFixed(0)}',
-                          style: const TextStyle(
-                            color: DashboardTheme.warning,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: DashboardTheme.spacingLg),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildLoanDetailColumn(
-                          'Principal',
-                          '${loan.currency} ${loan.principal}',
-                        ),
-                        _buildLoanDetailColumn(
-                          'Rate',
-                          '${loan.interestRate}% (${loan.interestType})',
-                        ),
-                        if (totalMonths > 0)
-                          _buildLoanDetailColumn(
-                            'Period',
-                            '$totalMonths Months\n($remainingMonths left)',
-                          )
-                        else if (loan.dueDate != null)
-                          _buildLoanDetailColumn(
-                            'Due Date',
-                            DateFormat('MMM dd, yyyy').format(loan.dueDate!),
-                          ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
               ),
             );
@@ -440,24 +438,24 @@ class BorrowerProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLoanDetailColumn(String label, String value) {
+  Widget _buildLoanDetailColumn(BuildContext context, String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: DashboardTheme.textSecondary,
+            color: AppTheme.colors(context).textSecondary,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: DashboardTheme.textPrimary,
+            color: AppTheme.colors(context).textPrimary,
           ),
         ),
       ],
@@ -471,23 +469,23 @@ class BorrowerProfileScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Repayment History',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: DashboardTheme.textPrimary,
+            color: AppTheme.colors(context).textPrimary,
           ),
         ),
-        const SizedBox(height: DashboardTheme.spacingMd),
+        const SizedBox(height: AppTheme.spacingMd),
         repaymentsAsync.when(
           loading: () => const CircularProgressIndicator(),
           error: (err, _) => Text('Failed to load repayments: $err'),
           data: (repayments) {
             if (repayments.isEmpty) {
-              return const Text(
+              return Text(
                 'No repayment history.',
-                style: TextStyle(color: DashboardTheme.textSecondary),
+                style: TextStyle(color: AppTheme.colors(context).textSecondary),
               );
             }
             return Column(
@@ -500,14 +498,13 @@ class BorrowerProfileScreen extends ConsumerWidget {
                 }
 
                 return Card(
-                  color: Colors.white,
+                  color: AppTheme.colors(context).cardBackground,
                   margin: const EdgeInsets.only(
-                    bottom: DashboardTheme.spacingSm,
+                    bottom: AppTheme.spacingSm,
                   ),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.grey.shade200),
                   ),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
@@ -515,17 +512,17 @@ class BorrowerProfileScreen extends ConsumerWidget {
                       context.push('/repayments/repayment-review/${rep.id}');
                     },
                     child: Padding(
-                      padding: const EdgeInsets.all(DashboardTheme.spacingMd),
+                      padding: const EdgeInsets.all(AppTheme.spacingMd),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           CircleAvatar(
                             backgroundColor: isLate
-                                ? Colors.red.shade50
+                                ? AppTheme.colors(context).dangerSurface
                                 : (rep.status == 'confirmed' ||
                                           rep.status == 'paid'
-                                      ? Colors.green.shade50
-                                      : Colors.orange.shade50),
+                                      ? AppTheme.colors(context).successSurface
+                                      : AppTheme.colors(context).warningSurface),
                             child: Icon(
                               isLate
                                   ? Icons.warning
@@ -534,40 +531,41 @@ class BorrowerProfileScreen extends ConsumerWidget {
                                         ? Icons.check
                                         : Icons.access_time),
                               color: isLate
-                                  ? Colors.red
+                                  ? AppTheme.colors(context).danger
                                   : (rep.status == 'confirmed' ||
                                             rep.status == 'paid'
-                                        ? Colors.green
-                                        : Colors.orange),
+                                        ? AppTheme.colors(context).success
+                                        : AppTheme.colors(context).warning),
                             ),
                           ),
-                          const SizedBox(width: DashboardTheme.spacingMd),
+                          const SizedBox(width: AppTheme.spacingMd),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'Amount: ${rep.amount}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
+                                    color: AppTheme.colors(context).textPrimary,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 if (rep.dueDate != null)
                                   Text(
                                     'Due: ${DateFormat('MMM dd, yyyy').format(rep.dueDate!)} (${_getDaysRemaining(rep.dueDate!)})',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
-                                      color: DashboardTheme.textSecondary,
+                                      color: AppTheme.colors(context).textSecondary,
                                     ),
                                   ),
                                 if (rep.paidDate != null)
                                   Text(
                                     'Paid on: ${DateFormat('MMM dd, yyyy').format(rep.paidDate!)}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
-                                      color: DashboardTheme.success,
+                                      color: AppTheme.colors(context).success,
                                     ),
                                   ),
                               ],
@@ -580,11 +578,11 @@ class BorrowerProfileScreen extends ConsumerWidget {
                             ),
                             decoration: BoxDecoration(
                               color: isLate
-                                  ? Colors.red.shade50
+                                  ? AppTheme.colors(context).dangerSurface
                                   : (rep.status == 'confirmed' ||
                                             rep.status == 'paid'
-                                        ? Colors.green.shade50
-                                        : Colors.orange.shade50),
+                                        ? AppTheme.colors(context).successSurface
+                                        : AppTheme.colors(context).warningSurface),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -593,11 +591,11 @@ class BorrowerProfileScreen extends ConsumerWidget {
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                                 color: isLate
-                                    ? Colors.red
+                                    ? AppTheme.colors(context).danger
                                     : (rep.status == 'confirmed' ||
                                               rep.status == 'paid'
-                                          ? Colors.green
-                                          : Colors.orange),
+                                          ? AppTheme.colors(context).success
+                                          : AppTheme.colors(context).warning),
                               ),
                             ),
                           ),
@@ -620,24 +618,20 @@ class BorrowerProfileScreen extends ConsumerWidget {
     ConnectionModel connection,
   ) {
     return Container(
-      padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-      decoration: BoxDecoration(
-        color: DashboardTheme.cardBackground,
-        border: Border.all(color: Colors.grey.shade200),
-        borderRadius: BorderRadius.circular(16),
-      ),
+      padding: EdgeInsets.all(AppTheme.spacingLg),
+      decoration: AppTheme.cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Management & Reviews',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: DashboardTheme.textPrimary,
+              color: AppTheme.colors(context).textPrimary,
             ),
           ),
-          const SizedBox(height: DashboardTheme.spacingMd),
+          const SizedBox(height: AppTheme.spacingMd),
           const TextField(
             maxLines: 3,
             decoration: InputDecoration(
@@ -645,7 +639,7 @@ class BorrowerProfileScreen extends ConsumerWidget {
               border: OutlineInputBorder(),
             ),
           ),
-          const SizedBox(height: DashboardTheme.spacingMd),
+          const SizedBox(height: AppTheme.spacingMd),
           Align(
             alignment: Alignment.centerRight,
             child: ElevatedButton(
@@ -655,36 +649,36 @@ class BorrowerProfileScreen extends ConsumerWidget {
                   const SnackBar(content: Text('Note saved (Mocked)')),
                 );
               },
-              child: const Text('Save Note'),
+              child: Text('Save Note'),
             ),
           ),
-          const Divider(height: 32),
-          const Text(
+          Divider(height: 32),
+          Text(
             'Danger Zone',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: DashboardTheme.danger,
+              color: AppTheme.colors(context).danger,
             ),
           ),
-          const SizedBox(height: DashboardTheme.spacingSm),
-          const Text(
+          SizedBox(height: AppTheme.spacingSm),
+          Text(
             'Blocking this user will prevent them from requesting new loans and hide their active profile. You can unblock later.',
-            style: TextStyle(fontSize: 13, color: DashboardTheme.textSecondary),
+            style: TextStyle(fontSize: 13, color: AppTheme.colors(context).textSecondary),
           ),
-          const SizedBox(height: DashboardTheme.spacingMd),
+          SizedBox(height: AppTheme.spacingMd),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              icon: const Icon(Icons.block, color: DashboardTheme.danger),
+              icon: Icon(Icons.block, color: AppTheme.colors(context).danger),
               label: Text(
                 connection.status == 'blocked'
                     ? 'Unblock Borrower'
                     : 'Block Borrower',
-                style: const TextStyle(color: DashboardTheme.danger),
+                style: TextStyle(color: AppTheme.colors(context).danger),
               ),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: DashboardTheme.danger),
+                side: BorderSide(color: AppTheme.colors(context).danger),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               onPressed: () async {

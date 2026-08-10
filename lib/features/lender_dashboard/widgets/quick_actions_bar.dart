@@ -1,73 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 
-/// Horizontal row of quick-action chips for common lender operations.
+/// A modern row of 4 primary quick-action buttons for common lender operations.
 class QuickActionsBar extends StatelessWidget {
   const QuickActionsBar({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 48,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(
-          horizontal: DashboardTheme.spacingLg,
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _ActionChip(
-            icon: Icons.add_circle_outline,
+          _ActionButton(
+            icon: Icons.add_rounded,
             label: 'New Loan',
-            color: DashboardTheme.primary,
-            backgroundColor: DashboardTheme.primarySurface,
+            color: AppTheme.colors(context).primary,
+            backgroundColor: AppTheme.colors(context).primarySurface,
             onTap: () => context.push('/new-loan'),
           ),
-          const SizedBox(width: DashboardTheme.spacingSm),
-          _ActionChip(
-            icon: Icons.calendar_month_outlined,
-            label: 'Repayments',
-            color: Colors.blue,
-            backgroundColor: Colors.blue.shade50,
+          _ActionButton(
+            icon: Icons.calendar_month_rounded,
+            label: 'Schedule',
+            color: AppTheme.colors(context).accent,
+            backgroundColor: AppTheme.colors(context).accentSurface,
             onTap: () => context.push('/repayments'),
           ),
-          const SizedBox(width: DashboardTheme.spacingSm),
-          _ActionChip(
-            icon: Icons.payments_outlined,
-            label: 'Record Payment',
-            color: DashboardTheme.accent,
-            backgroundColor: DashboardTheme.accentSurface,
-            onTap: () {
-              // TODO: Navigate to record payment screen.
-            },
-          ),
-          const SizedBox(width: DashboardTheme.spacingSm),
-          _ActionChip(
-            icon: Icons.notifications_active_outlined,
-            label: 'Send Reminder',
-            color: DashboardTheme.warning,
-            backgroundColor: DashboardTheme.warningSurface,
-            onTap: () {
-              // TODO: Navigate to send reminder screen.
-            },
-          ),
-          const SizedBox(width: DashboardTheme.spacingSm),
-          _ActionChip(
-            icon: Icons.history_edu_rounded,
-            label: 'Audit Logs',
-            color: Colors.purple,
-            backgroundColor: Colors.purple.shade50,
-            onTap: () => context.push('/audit-logs'),
-          ),
-          const SizedBox(width: DashboardTheme.spacingSm),
-          _ActionChip(
+          _ActionButton(
             icon: Icons.bar_chart_rounded,
             label: 'Reports',
-            color: DashboardTheme.textSecondary,
-            backgroundColor: DashboardTheme.surface,
+            color: AppTheme.colors(context).info,
+            backgroundColor: AppTheme.colors(context).infoSurface,
             onTap: () {
               // TODO: Navigate to reports screen.
+            },
+          ),
+          _ActionButton(
+            icon: Icons.notifications_active_rounded,
+            label: 'Remind',
+            color: AppTheme.colors(context).warning,
+            backgroundColor: AppTheme.colors(context).warningSurface,
+            onTap: () {
+              // TODO: Navigate to send reminder screen.
             },
           ),
         ],
@@ -76,9 +53,9 @@ class QuickActionsBar extends StatelessWidget {
   }
 }
 
-/// Private stateless chip used only inside [QuickActionsBar].
-class _ActionChip extends StatelessWidget {
-  const _ActionChip({
+/// Private stateless button used only inside [QuickActionsBar].
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({
     required this.icon,
     required this.label,
     required this.color,
@@ -94,25 +71,32 @@ class _ActionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: backgroundColor,
-      borderRadius: DashboardTheme.radiusSm,
-      child: InkWell(
+    return Expanded(
+      child: GestureDetector(
         onTap: onTap,
-        borderRadius: DashboardTheme.radiusSm,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 18, color: color),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: DashboardTheme.labelBold.copyWith(color: color),
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                shape: BoxShape.circle,
               ),
-            ],
-          ),
+              child: Icon(icon, size: 28, color: color),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: AppTheme.text(context).labelBold.copyWith(
+                fontSize: 12,
+                color: AppTheme.colors(context).textSecondary,
+              ),
+            ),
+          ],
         ),
       ),
     );

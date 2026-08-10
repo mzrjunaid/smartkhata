@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/loan_activity.dart';
-import '../theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 
 /// Single activity row with a colored leading icon, title, subtitle,
 /// trailing amount, and relative date.
@@ -34,33 +34,33 @@ class ActivityTile extends StatelessWidget {
     }
   }
 
-  Color get _iconColor {
+  Color _iconColor(BuildContext context) {
     switch (activity.type) {
       case ActivityType.repaymentConfirmed:
-        return DashboardTheme.success;
+        return AppTheme.colors(context).success;
       case ActivityType.repaymentPending:
-        return DashboardTheme.warning;
+        return AppTheme.colors(context).warning;
       case ActivityType.repaymentRejected:
       case ActivityType.repaymentMissed:
       case ActivityType.overdue:
-        return DashboardTheme.danger;
+        return AppTheme.colors(context).danger;
       case ActivityType.disbursed:
-        return DashboardTheme.accent;
+        return AppTheme.colors(context).accent;
     }
   }
 
-  Color get _iconBg {
+  Color _iconBg(BuildContext context) {
     switch (activity.type) {
       case ActivityType.repaymentConfirmed:
-        return DashboardTheme.successSurface;
+        return AppTheme.colors(context).successSurface;
       case ActivityType.repaymentPending:
-        return DashboardTheme.warningSurface;
+        return AppTheme.colors(context).warningSurface;
       case ActivityType.repaymentRejected:
       case ActivityType.repaymentMissed:
       case ActivityType.overdue:
-        return DashboardTheme.dangerSurface;
+        return AppTheme.colors(context).dangerSurface;
       case ActivityType.disbursed:
-        return DashboardTheme.accentSurface;
+        return AppTheme.colors(context).accentSurface;
     }
   }
 
@@ -84,23 +84,23 @@ class ActivityTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: DashboardTheme.spacingLg,
-        vertical: DashboardTheme.spacingMd,
+      padding: EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingLg,
+        vertical: AppTheme.spacingMd,
       ),
       child: Row(
         children: [
           // ── Colored icon ──────────────────────────────────────────
           Container(
-            padding: const EdgeInsets.all(DashboardTheme.spacingSm),
+            padding: EdgeInsets.all(AppTheme.spacingSm),
             decoration: BoxDecoration(
-              color: _iconBg,
-              borderRadius: DashboardTheme.radiusSm,
+              color: _iconBg(context),
+              borderRadius: AppTheme.radiusSm,
             ),
-            child: Icon(_icon, size: 20, color: _iconColor),
+            child: Icon(_icon, size: 20, color: _iconColor(context)),
           ),
 
-          const SizedBox(width: DashboardTheme.spacingMd),
+          SizedBox(width: AppTheme.spacingMd),
 
           // ── Details ───────────────────────────────────────────────
           Expanded(
@@ -109,12 +109,12 @@ class ActivityTile extends StatelessWidget {
               children: [
                 Text(
                   activity.borrowerName,
-                  style: DashboardTheme.headingSmall,
+                  style: AppTheme.text(context).headingSmall,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
-                Text(_typeLabel, style: DashboardTheme.bodyMedium),
+                SizedBox(height: 2),
+                Text(_typeLabel, style: AppTheme.text(context).bodyMedium),
               ],
             ),
           ),
@@ -127,16 +127,16 @@ class ActivityTile extends StatelessWidget {
                 (activity.type == ActivityType.repaymentConfirmed || activity.type == ActivityType.repaymentPending)
                     ? '+$formattedAmount'
                     : formattedAmount,
-                style: DashboardTheme.headingSmall.copyWith(
+                style: AppTheme.text(context).headingSmall.copyWith(
                   color: activity.type == ActivityType.repaymentConfirmed
-                      ? DashboardTheme.success
+                      ? AppTheme.colors(context).success
                       : (activity.type == ActivityType.repaymentPending
-                          ? DashboardTheme.warning
-                          : DashboardTheme.textPrimary),
+                          ? AppTheme.colors(context).warning
+                          : AppTheme.colors(context).textPrimary),
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(relativeDate, style: DashboardTheme.bodySmall),
+              SizedBox(height: 2),
+              Text(relativeDate, style: AppTheme.text(context).bodySmall),
             ],
           ),
         ],

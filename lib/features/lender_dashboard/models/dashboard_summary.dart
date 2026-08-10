@@ -7,6 +7,7 @@ class DashboardSummary {
     required this.totalLent,
     required this.totalReceived,
     required this.outstandingBalance,
+    required this.totalLoansCount,
     required this.activeLoansCount,
     required this.overdueCount,
     required this.monthlyInterestEarned,
@@ -15,6 +16,7 @@ class DashboardSummary {
   final double totalLent;
   final double totalReceived;
   final double outstandingBalance;
+  final int totalLoansCount;
   final int activeLoansCount;
   final int overdueCount;
   final double monthlyInterestEarned;
@@ -28,6 +30,7 @@ class DashboardSummary {
       totalLent: (json['total_lent'] as num).toDouble(),
       totalReceived: (json['total_received'] as num).toDouble(),
       outstandingBalance: (json['outstanding_balance'] as num).toDouble(),
+      totalLoansCount: json['total_loans_count'] as int,
       activeLoansCount: json['active_loans_count'] as int,
       overdueCount: json['overdue_count'] as int,
       monthlyInterestEarned:

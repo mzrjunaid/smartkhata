@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../../core/providers/theme_provider.dart';
+import '../../../core/widgets/dashboard_app_bar.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -16,17 +19,18 @@ class SettingsScreen extends ConsumerWidget {
             MediaQuery.platformBrightnessOf(context) == Brightness.dark);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Settings',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 20),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: Column(
         children: [
-          _buildSectionHeader('Appearance'),
+          const DashboardAppBar(
+            title: 'Settings',
+            subtitle: 'Manage your preferences',
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.only(top: 20, bottom: 120),
+              children: [
+          _buildSectionHeader(context, 'Appearance'),
           _buildListTile(
             context,
             icon: Icons.dark_mode_outlined,
@@ -42,7 +46,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
 
           const SizedBox(height: 24),
-          _buildSectionHeader('Account'),
+          _buildSectionHeader(context, 'Account'),
           _buildListTile(
             context,
             icon: Icons.person_outline,
@@ -61,7 +65,17 @@ class SettingsScreen extends ConsumerWidget {
           ),
 
           const SizedBox(height: 24),
-          _buildSectionHeader('Preferences'),
+          _buildSectionHeader(context, 'Security & Logs'),
+          _buildListTile(
+            context,
+            icon: Icons.history_edu_rounded,
+            title: 'Audit Logs',
+            onTap: () {
+              context.push('/audit-logs');
+            },
+          ),
+          const SizedBox(height: 24),
+          _buildSectionHeader(context, 'Preferences'),
           _buildListTile(
             context,
             icon: Icons.notifications_outlined,
@@ -138,12 +152,15 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
+            ],
+          ),
+        ),
         ],
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Text(

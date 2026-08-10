@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/providers/auth_providers.dart';
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 
 enum SignupCategory { lender, borrower }
 
@@ -154,17 +154,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
   InputDecoration _buildInputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: DashboardTheme.textSecondary),
-      prefixIcon: Icon(icon, color: DashboardTheme.primary),
+      labelStyle: TextStyle(color: AppTheme.colors(context).textSecondary),
+      prefixIcon: Icon(icon, color: AppTheme.colors(context).primary),
       filled: true,
-      fillColor: DashboardTheme.surface,
+      fillColor: AppTheme.colors(context).surface,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: DashboardTheme.primary, width: 2),
+        borderSide: BorderSide(color: AppTheme.colors(context).primary, width: 2),
       ),
     );
   }
@@ -175,7 +175,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
     final showFullForm = !isBorrower || _invitationVerified;
 
     return Scaffold(
-      backgroundColor: DashboardTheme.surface,
+      backgroundColor: AppTheme.colors(context).surface,
       body: Stack(
         children: [
           // Background abstract shapes
@@ -187,7 +187,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: DashboardTheme.primary.withValues(alpha: 0.08),
+                color: AppTheme.colors(context).primary.withValues(alpha: 0.08),
               ),
             ),
           ),
@@ -199,7 +199,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: DashboardTheme.accent.withValues(alpha: 0.08),
+                color: AppTheme.colors(context).accent.withValues(alpha: 0.08),
               ),
             ),
           ),
@@ -207,7 +207,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
+                padding: EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 40,
                 ),
@@ -219,23 +219,23 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         // Header
-                        const Text(
+                        Text(
                           'Create Account',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color: DashboardTheme.textPrimary,
+                            color: AppTheme.colors(context).textPrimary,
                             letterSpacing: -0.5,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
+                        SizedBox(height: 8),
+                        Text(
                           'Join SmartKhata today',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
-                            color: DashboardTheme.textSecondary,
+                            color: AppTheme.colors(context).textSecondary,
                           ),
                         ),
                         const SizedBox(height: 32),
@@ -271,7 +271,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                     Set<WidgetState> states,
                                   ) {
                                     if (states.contains(WidgetState.selected)) {
-                                      return DashboardTheme.primary.withValues(
+                                      return AppTheme.colors(context).primary.withValues(
                                         alpha: 0.1,
                                       );
                                     }
@@ -282,18 +282,18 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                     Set<WidgetState> states,
                                   ) {
                                     if (states.contains(WidgetState.selected)) {
-                                      return DashboardTheme.primary;
+                                      return AppTheme.colors(context).primary;
                                     }
-                                    return DashboardTheme.textSecondary;
+                                    return AppTheme.colors(context).textSecondary;
                                   }),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        SizedBox(height: 32),
 
                         // Form Card
                         Container(
-                          padding: const EdgeInsets.all(28),
+                          padding: EdgeInsets.all(28),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(24),
@@ -301,7 +301,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.04),
                                 blurRadius: 24,
-                                offset: const Offset(0, 8),
+                                offset: Offset(0, 8),
                               ),
                             ],
                           ),
@@ -323,10 +323,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                         suffixIcon:
                                             isBorrower && _invitationVerified
                                             ? IconButton(
-                                                icon: const Icon(
+                                                icon: Icon(
                                                   Icons.edit,
                                                   size: 20,
-                                                  color: DashboardTheme.primary,
+                                                  color: AppTheme.colors(context).primary,
                                                 ),
                                                 onPressed: _resetBorrowerFlow,
                                                 tooltip: 'Change CNIC',
@@ -344,13 +344,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
 
                                 // Verify button for borrower flow
                                 if (isBorrower && !_invitationVerified) ...[
-                                  const SizedBox(height: 24),
+                                  SizedBox(height: 24),
                                   ElevatedButton.icon(
                                     onPressed: _loading ? null : _verifyCnic,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: DashboardTheme.accent,
+                                      backgroundColor: AppTheme.colors(context).accent,
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
+                                      padding: EdgeInsets.symmetric(
                                         vertical: 16,
                                       ),
                                       shape: RoundedRectangleBorder(
@@ -359,7 +359,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                       elevation: 0,
                                     ),
                                     icon: _loading
-                                        ? const SizedBox(
+                                        ? SizedBox(
                                             width: 20,
                                             height: 20,
                                             child: CircularProgressIndicator(
@@ -367,10 +367,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                               color: Colors.white,
                                             ),
                                           )
-                                        : const Icon(
+                                        : Icon(
                                             Icons.verified_user_outlined,
                                           ),
-                                    label: const Text(
+                                    label: Text(
                                       'Verify Invitation',
                                       style: TextStyle(
                                         fontSize: 16,
@@ -382,7 +382,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
 
                                 // Full Form
                                 if (showFullForm) ...[
-                                  const SizedBox(height: 20),
+                                  SizedBox(height: 20),
                                   FormBuilderTextField(
                                     name: 'full_name',
                                     decoration: _buildInputDecoration(
@@ -391,7 +391,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                     ),
                                     validator: FormBuilderValidators.required(),
                                   ),
-                                  const SizedBox(height: 20),
+                                  SizedBox(height: 20),
                                   FormBuilderTextField(
                                     name: 'phone',
                                     decoration: _buildInputDecoration(
@@ -399,7 +399,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                       Icons.phone_outlined,
                                     ),
                                   ),
-                                  const SizedBox(height: 20),
+                                  SizedBox(height: 20),
                                   FormBuilderTextField(
                                     name: 'email',
                                     decoration: _buildInputDecoration(
@@ -412,7 +412,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                       FormBuilderValidators.email(),
                                     ]),
                                   ),
-                                  const SizedBox(height: 20),
+                                  SizedBox(height: 20),
                                   FormBuilderTextField(
                                     name: 'password',
                                     decoration:
@@ -427,7 +427,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                                   : Icons
                                                         .visibility_off_outlined,
                                               color:
-                                                  DashboardTheme.textTertiary,
+                                                  AppTheme.colors(context).textTertiary,
                                             ),
                                             onPressed: () {
                                               setState(() {
@@ -442,34 +442,34 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                       6,
                                     ),
                                   ),
-                                  const SizedBox(height: 32),
+                                  SizedBox(height: 32),
 
                                   if (_error != null)
                                     Padding(
-                                      padding: const EdgeInsets.only(
+                                      padding: EdgeInsets.only(
                                         bottom: 24,
                                       ),
                                       child: Container(
-                                        padding: const EdgeInsets.all(12),
+                                        padding: EdgeInsets.all(12),
                                         decoration: BoxDecoration(
-                                          color: DashboardTheme.dangerSurface,
+                                          color: AppTheme.colors(context).dangerSurface,
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
                                         ),
                                         child: Row(
                                           children: [
-                                            const Icon(
+                                            Icon(
                                               Icons.error_outline,
-                                              color: DashboardTheme.danger,
+                                              color: AppTheme.colors(context).danger,
                                               size: 20,
                                             ),
-                                            const SizedBox(width: 8),
+                                            SizedBox(width: 8),
                                             Expanded(
                                               child: Text(
                                                 _error!,
-                                                style: const TextStyle(
-                                                  color: DashboardTheme.danger,
+                                                style: TextStyle(
+                                                  color: AppTheme.colors(context).danger,
                                                   fontSize: 13,
                                                 ),
                                               ),
@@ -482,9 +482,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                   ElevatedButton(
                                     onPressed: _loading ? null : _submit,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: DashboardTheme.primary,
+                                      backgroundColor: AppTheme.colors(context).primary,
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
+                                      padding: EdgeInsets.symmetric(
                                         vertical: 18,
                                       ),
                                       shape: RoundedRectangleBorder(
@@ -495,7 +495,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                     child:
                                         _loading &&
                                             (!isBorrower || _invitationVerified)
-                                        ? const SizedBox(
+                                        ? SizedBox(
                                             height: 24,
                                             width: 24,
                                             child: CircularProgressIndicator(
@@ -503,7 +503,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                               strokeWidth: 3,
                                             ),
                                           )
-                                        : const Text(
+                                        : Text(
                                             'Complete Sign Up',
                                             style: TextStyle(
                                               fontSize: 16,
@@ -518,23 +518,23 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                           ),
                         ),
 
-                        const SizedBox(height: 32),
+                        SizedBox(height: 32),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
+                            Text(
                               "Already have an account?",
                               style: TextStyle(
-                                color: DashboardTheme.textSecondary,
+                                color: AppTheme.colors(context).textSecondary,
                                 fontSize: 15,
                               ),
                             ),
                             TextButton(
                               onPressed: () => context.go('/login'),
-                              child: const Text(
+                              child: Text(
                                 'Login',
                                 style: TextStyle(
-                                  color: DashboardTheme.primary,
+                                  color: AppTheme.colors(context).primary,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
                                 ),

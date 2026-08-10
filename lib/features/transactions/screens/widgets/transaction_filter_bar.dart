@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../../providers/transactions_providers.dart';
 
 class TransactionFilterBar extends ConsumerWidget {
@@ -96,10 +96,10 @@ class TransactionFilterBar extends ConsumerWidget {
             return Theme(
               data: Theme.of(context).copyWith(
                 colorScheme: ColorScheme.light(
-                  primary: DashboardTheme.primary,
+                  primary: AppTheme.colors(context).primary,
                   onPrimary: Colors.white,
-                  surface: DashboardTheme.surface,
-                  onSurface: DashboardTheme.textPrimary,
+                  surface: AppTheme.colors(context).surface,
+                  onSurface: AppTheme.colors(context).textPrimary,
                 ),
               ),
               child: child!,
@@ -117,13 +117,13 @@ class TransactionFilterBar extends ConsumerWidget {
         }
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
-              ? DashboardTheme.primary.withValues(alpha: 0.1)
-              : Colors.white,
+              ? AppTheme.colors(context).primary.withValues(alpha: 0.1)
+              : AppTheme.colors(context).cardBackground,
           border: Border.all(
-            color: isActive ? DashboardTheme.primary : Colors.grey.shade300,
+            color: isActive ? AppTheme.colors(context).primary : AppTheme.colors(context).textTertiary.withValues(alpha: 0.3),
           ),
           borderRadius: BorderRadius.circular(20),
         ),
@@ -132,26 +132,26 @@ class TransactionFilterBar extends ConsumerWidget {
             Icon(
               Icons.calendar_today,
               size: 14,
-              color: isActive ? DashboardTheme.primary : Colors.grey.shade600,
+              color: isActive ? AppTheme.colors(context).primary : AppTheme.colors(context).textSecondary,
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: isActive ? DashboardTheme.primary : Colors.grey.shade700,
+                color: isActive ? AppTheme.colors(context).primary : AppTheme.colors(context).textSecondary,
               ),
             ),
             if (isActive) ...[
-              const SizedBox(width: 4),
+              SizedBox(width: 4),
               GestureDetector(
                 onTap: () =>
                     ref.read(transactionDateRangeProvider.notifier).clear(),
                 child: Icon(
                   Icons.close,
                   size: 14,
-                  color: DashboardTheme.primary,
+                  color: AppTheme.colors(context).primary,
                 ),
               ),
             ],
@@ -170,18 +170,18 @@ class TransactionFilterBar extends ConsumerWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        duration: Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? DashboardTheme.primary : Colors.white,
+          color: isActive ? AppTheme.colors(context).primary : AppTheme.colors(context).cardBackground,
           border: Border.all(
-            color: isActive ? DashboardTheme.primary : Colors.grey.shade300,
+            color: isActive ? AppTheme.colors(context).primary : AppTheme.colors(context).textTertiary.withValues(alpha: 0.3),
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: isActive
               ? [
                   BoxShadow(
-                    color: DashboardTheme.primary.withValues(alpha: 0.3),
+                    color: AppTheme.colors(context).primary.withValues(alpha: 0.3),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -193,7 +193,7 @@ class TransactionFilterBar extends ConsumerWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
-            color: isActive ? Colors.white : Colors.grey.shade700,
+            color: isActive ? Colors.white : AppTheme.colors(context).textSecondary,
           ),
         ),
       ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 
 /// Single loan row displaying avatar, borrower name, amount, and status badge.
 class LoanItemTile extends StatelessWidget {
@@ -19,25 +19,25 @@ class LoanItemTile extends StatelessWidget {
   final String status;
   final VoidCallback? onTap;
 
-  Color get _statusColor {
+  Color _statusColor(BuildContext context) {
     switch (status) {
       case 'overdue':
-        return DashboardTheme.danger;
+        return AppTheme.colors(context).danger;
       case 'paid':
-        return DashboardTheme.success;
+        return AppTheme.colors(context).success;
       default:
-        return DashboardTheme.accent;
+        return AppTheme.colors(context).accent;
     }
   }
 
-  Color get _statusBg {
+  Color _statusBg(BuildContext context) {
     switch (status) {
       case 'overdue':
-        return DashboardTheme.dangerSurface;
+        return AppTheme.colors(context).dangerSurface;
       case 'paid':
-        return DashboardTheme.successSurface;
+        return AppTheme.colors(context).successSurface;
       default:
-        return DashboardTheme.accentSurface;
+        return AppTheme.colors(context).accentSurface;
     }
   }
 
@@ -52,27 +52,27 @@ class LoanItemTile extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: DashboardTheme.radiusSm,
+      borderRadius: AppTheme.radiusSm,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: DashboardTheme.spacingLg,
-          vertical: DashboardTheme.spacingMd,
+        padding: EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingLg,
+          vertical: AppTheme.spacingMd,
         ),
         child: Row(
           children: [
             // ── Avatar ──────────────────────────────────────────────
             CircleAvatar(
               radius: 20,
-              backgroundColor: DashboardTheme.primarySurface,
+              backgroundColor: AppTheme.colors(context).primarySurface,
               child: Text(
                 initials,
-                style: DashboardTheme.labelBold.copyWith(
-                  color: DashboardTheme.primary,
-                ),
+                style: AppTheme.text(
+                  context,
+                ).labelBold.copyWith(color: AppTheme.colors(context).primary),
               ),
             ),
 
-            const SizedBox(width: DashboardTheme.spacingMd),
+            SizedBox(width: AppTheme.spacingMd),
 
             // ── Name & amount ───────────────────────────────────────
             Expanded(
@@ -81,27 +81,27 @@ class LoanItemTile extends StatelessWidget {
                 children: [
                   Text(
                     borrowerName,
-                    style: DashboardTheme.headingSmall,
+                    style: AppTheme.text(context).headingSmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
-                  Text(amount, style: DashboardTheme.bodyMedium),
+                  SizedBox(height: 2),
+                  Text(amount, style: AppTheme.text(context).bodyMedium),
                 ],
               ),
             ),
 
             // ── Status badge ────────────────────────────────────────
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: _statusBg,
-                borderRadius: DashboardTheme.radiusSm,
+                color: _statusBg(context),
+                borderRadius: AppTheme.radiusSm,
               ),
               child: Text(
                 status[0].toUpperCase() + status.substring(1),
-                style: DashboardTheme.bodySmall.copyWith(
-                  color: _statusColor,
+                style: AppTheme.text(context).bodySmall.copyWith(
+                  color: _statusColor(context),
                   fontWeight: FontWeight.w600,
                 ),
               ),

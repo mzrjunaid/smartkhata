@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/providers/profile_providers.dart';
 import '../../loan_users/data/loan_users_repository.dart';
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../../lender_dashboard/providers/dashboard_providers.dart';
 
 class RepaymentReviewScreen extends ConsumerWidget {
@@ -18,10 +18,10 @@ class RepaymentReviewScreen extends ConsumerWidget {
     final repaymentAsync = ref.watch(repaymentDetailsProvider(repaymentId));
 
     return Scaffold(
-      backgroundColor: DashboardTheme.surface,
+      backgroundColor: AppTheme.colors(context).surface,
       appBar: AppBar(
-        title: const Text('Review Payment'),
-        backgroundColor: DashboardTheme.primary,
+        title: Text('Review Payment'),
+        backgroundColor: AppTheme.colors(context).primary,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -44,27 +44,27 @@ class RepaymentReviewScreen extends ConsumerWidget {
           final isPending = repayment.status == 'pending';
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(DashboardTheme.spacingLg),
+            padding: EdgeInsets.all(AppTheme.spacingLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-                  decoration: DashboardTheme.cardDecoration,
+                  padding: EdgeInsets.all(AppTheme.spacingLg),
+                  decoration: AppTheme.cardDecoration(context),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildInfoRow(
+                      _buildInfoRow(context, 
                         'Status',
                         repayment.status.toUpperCase(),
                         color: isPending
-                            ? DashboardTheme.warning
-                            : DashboardTheme.success,
+                            ? AppTheme.colors(context).warning
+                            : AppTheme.colors(context).success,
                       ),
                       const Divider(),
-                      _buildInfoRow('Amount', 'Rs. ${repayment.amount}'),
-                      const Divider(),
-                      _buildInfoRow(
+                      _buildInfoRow(context, 'Amount', 'Rs. ${repayment.amount}'),
+                      Divider(),
+                      _buildInfoRow(context, 
                         'Due Date',
                         repayment.dueDate != null
                             ? DateFormat(
@@ -72,8 +72,8 @@ class RepaymentReviewScreen extends ConsumerWidget {
                               ).format(repayment.dueDate!)
                             : 'N/A',
                       ),
-                      const Divider(),
-                      _buildInfoRow(
+                      Divider(),
+                      _buildInfoRow(context, 
                         'Paid Date',
                         repayment.paidDate != null
                             ? DateFormat(
@@ -82,27 +82,27 @@ class RepaymentReviewScreen extends ConsumerWidget {
                             : 'N/A',
                         warning: repayment.paidDate == null ? 'Missing' : null,
                       ),
-                      const Divider(),
-                      _buildInfoRow(
+                      Divider(),
+                      _buildInfoRow(context, 
                         'Payment Method',
                         repayment.method ?? 'Not provided',
                         warning: repayment.method == null ? 'Missing' : null,
                       ),
-                      const Divider(),
-                      _buildInfoRow(
+                      Divider(),
+                      _buildInfoRow(context, 
                         'Borrower Note',
                         repayment.note ?? 'None',
                         warning: repayment.note == null ? 'Skipped' : null,
                       ),
-                      const Divider(),
-                      const Text('Attachment', style: DashboardTheme.labelBold),
-                      const SizedBox(height: DashboardTheme.spacingSm),
+                      Divider(),
+                      Text('Attachment', style: AppTheme.text(context).labelBold),
+                      const SizedBox(height: AppTheme.spacingSm),
                       Container(
                         height: 150,
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color: Colors.grey.shade100,
-                          borderRadius: DashboardTheme.radiusMd,
+                          borderRadius: AppTheme.radiusMd,
                           border: Border.all(color: Colors.grey.shade300),
                         ),
                         child: const Center(
@@ -115,7 +115,7 @@ class RepaymentReviewScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: DashboardTheme.spacingXxl),
+                const SizedBox(height: AppTheme.spacingXxl),
                 if (isPending) ...[
                   ElevatedButton(
                     onPressed: () async {
@@ -144,13 +144,13 @@ class RepaymentReviewScreen extends ConsumerWidget {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: DashboardTheme.success,
+                      backgroundColor: AppTheme.colors(context).success,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.all(16),
                     ),
                     child: const Text('Confirm Payment'),
                   ),
-                  const SizedBox(height: DashboardTheme.spacingMd),
+                  const SizedBox(height: AppTheme.spacingMd),
                   OutlinedButton(
                     onPressed: () async {
                       await ref
@@ -171,8 +171,8 @@ class RepaymentReviewScreen extends ConsumerWidget {
                       }
                     },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: DashboardTheme.danger,
-                      side: const BorderSide(color: DashboardTheme.danger),
+                      foregroundColor: AppTheme.colors(context).danger,
+                      side: BorderSide(color: AppTheme.colors(context).danger),
                       padding: const EdgeInsets.all(16),
                     ),
                     child: const Text('Reject & Request Resubmission'),
@@ -186,20 +186,20 @@ class RepaymentReviewScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInfoRow(
+  Widget _buildInfoRow(BuildContext context, 
     String label,
     String value, {
     Color? color,
     String? warning,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             flex: 2,
-            child: Text(label, style: DashboardTheme.labelBold),
+            child: Text(label, style: AppTheme.text(context).labelBold),
           ),
           Expanded(
             flex: 3,
@@ -213,7 +213,7 @@ class RepaymentReviewScreen extends ConsumerWidget {
                     fontWeight: color != null
                         ? FontWeight.bold
                         : FontWeight.w500,
-                    color: color ?? DashboardTheme.textPrimary,
+                    color: color ?? AppTheme.colors(context).textPrimary,
                   ),
                 ),
                 if (warning != null)

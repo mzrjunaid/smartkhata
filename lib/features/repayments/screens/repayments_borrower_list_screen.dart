@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../new_loan/models/connection_model.dart';
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../../loan_users/data/loan_users_repository.dart';
 
 import '../../../core/widgets/dashboard_app_bar.dart';
@@ -15,31 +15,31 @@ class RepaymentsBorrowerListScreen extends ConsumerWidget {
     final connectionsAsync = ref.watch(activeConnectionsProvider);
 
     return Scaffold(
-      backgroundColor: DashboardTheme.surface,
+      backgroundColor: AppTheme.colors(context).surface,
       body: Column(
         children: [
-          const DashboardAppBar(title: 'Repayments', showBackButton: true),
+          DashboardAppBar(title: 'Repayments', showBackButton: true),
           Expanded(
             child: connectionsAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: DashboardTheme.primary),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: AppTheme.colors(context).primary),
         ),
         error: (error, stack) => Center(
-          child: Text('Error loading borrowers: $error', style: const TextStyle(color: DashboardTheme.danger)),
+          child: Text('Error loading borrowers: $error', style: TextStyle(color: AppTheme.colors(context).danger)),
         ),
         data: (connections) {
           final claimed = connections.where((c) => c.claimStatus == 'claimed').toList();
 
           if (claimed.isEmpty) {
-            return const Center(
-              child: Text('No active borrowers found.', style: TextStyle(color: DashboardTheme.textSecondary)),
+            return Center(
+              child: Text('No active borrowers found.', style: TextStyle(color: AppTheme.colors(context).textSecondary)),
             );
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.all(DashboardTheme.spacingLg),
+            padding: const EdgeInsets.all(AppTheme.spacingLg),
             itemCount: claimed.length,
-            separatorBuilder: (context, index) => const SizedBox(height: DashboardTheme.spacingMd),
+            separatorBuilder: (context, index) => const SizedBox(height: AppTheme.spacingMd),
             itemBuilder: (context, index) {
               return _BorrowerRepaymentCard(connection: claimed[index]);
             },
@@ -64,10 +64,10 @@ class _BorrowerRepaymentCard extends StatelessWidget {
       onTap: () {
         context.push('/repayments/${connection.id}');
       },
-      borderRadius: DashboardTheme.radiusLg,
+      borderRadius: AppTheme.radiusLg,
       child: Container(
-        padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-        decoration: DashboardTheme.cardDecoration,
+        padding: EdgeInsets.all(AppTheme.spacingLg),
+        decoration: AppTheme.cardDecoration(context),
         child: Row(
           children: [
             CircleAvatar(
@@ -75,24 +75,24 @@ class _BorrowerRepaymentCard extends StatelessWidget {
               backgroundColor: Colors.blue.shade50,
               child: Text(
                 connection.borrowerName.substring(0, 1).toUpperCase(),
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue),
               ),
             ),
-            const SizedBox(width: DashboardTheme.spacingLg),
+            SizedBox(width: AppTheme.spacingLg),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     connection.borrowerName,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: DashboardTheme.textPrimary),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.colors(context).textPrimary),
                   ),
                   const SizedBox(height: 4),
-                  Text('CNIC: ${connection.borrowerCnic}', style: DashboardTheme.bodyMedium),
+                  Text('CNIC: ${connection.borrowerCnic}', style: AppTheme.text(context).bodyMedium),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: DashboardTheme.textSecondary),
+            Icon(Icons.chevron_right, color: AppTheme.colors(context).textSecondary),
           ],
         ),
       ),

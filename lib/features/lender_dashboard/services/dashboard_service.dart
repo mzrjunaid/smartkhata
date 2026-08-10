@@ -22,6 +22,12 @@ class DashboardService {
     decimalDigits: 0,
   );
 
+  static final _currencyFormatExact = NumberFormat.currency(
+    locale: 'en_PK',
+    symbol: '₨ ',
+    decimalDigits: 2,
+  );
+
   static final _compactFormat = NumberFormat.compactCurrency(
     locale: 'en_PK',
     symbol: '₨ ',
@@ -30,6 +36,9 @@ class DashboardService {
 
   /// Formats [amount] as ₨ 1,250,000.
   String formatCurrency(double amount) => _currencyFormat.format(amount);
+
+  /// Formats [amount] exactly, e.g. ₨ 1,250,000.00
+  String formatCurrencyExact(double amount) => _currencyFormatExact.format(amount);
 
   /// Formats [amount] in compact form, e.g. ₨ 1.3M.
   String formatCompact(double amount) => _compactFormat.format(amount);

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 
 /// Gradient header for the new loan form with back button and title.
 class LoanFormHeader extends StatelessWidget {
@@ -12,17 +12,17 @@ class LoanFormHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + DashboardTheme.spacingMd,
-        left: DashboardTheme.spacingSm,
-        right: DashboardTheme.spacingLg,
-        bottom: DashboardTheme.spacingXl,
+        top: MediaQuery.of(context).padding.top + AppTheme.spacingMd,
+        left: AppTheme.spacingSm,
+        right: AppTheme.spacingLg,
+        bottom: AppTheme.spacingXl,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            DashboardTheme.primary,
+            AppTheme.colors(context).primary,
             Color(0xFF2E7D32),
           ],
         ),
@@ -37,33 +37,33 @@ class LoanFormHeader extends StatelessWidget {
           // ── Back button ───────────────────────────────────────────
           IconButton(
             onPressed: () => context.pop(),
-            icon: const Icon(Icons.arrow_back_rounded),
+            icon: Icon(Icons.arrow_back_rounded),
             color: Colors.white,
             tooltip: 'Back to Dashboard',
           ),
 
           Padding(
-            padding: const EdgeInsets.only(
-              left: DashboardTheme.spacingMd,
-              top: DashboardTheme.spacingSm,
+            padding: EdgeInsets.only(
+              left: AppTheme.spacingMd,
+              top: AppTheme.spacingSm,
             ),
             child: Row(
               children: [
                 // ── Icon badge ──────────────────────────────────────
                 Container(
-                  padding: const EdgeInsets.all(DashboardTheme.spacingMd),
+                  padding: EdgeInsets.all(AppTheme.spacingMd),
                   decoration: BoxDecoration(
                     color: Colors.white24,
-                    borderRadius: DashboardTheme.radiusMd,
+                    borderRadius: AppTheme.radiusMd,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.handshake_outlined,
                     color: Colors.white,
                     size: 28,
                   ),
                 ),
 
-                const SizedBox(width: DashboardTheme.spacingLg),
+                SizedBox(width: AppTheme.spacingLg),
 
                 // ── Title & subtitle ────────────────────────────────
                 Expanded(
@@ -72,15 +72,15 @@ class LoanFormHeader extends StatelessWidget {
                     children: [
                       Text(
                         'Create New Loan',
-                        style: DashboardTheme.headingLarge.copyWith(
+                        style: AppTheme.text(context).headingLarge.copyWith(
                           color: Colors.white,
                           fontSize: 22,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         'Fill in borrower and loan details below',
-                        style: DashboardTheme.bodyMedium.copyWith(
+                        style: AppTheme.text(context).bodyMedium.copyWith(
                           color: Colors.white70,
                         ),
                       ),

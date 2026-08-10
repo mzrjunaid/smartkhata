@@ -1,140 +1,195 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/widgets/dashboard_app_bar.dart';
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../../loan_users/data/loan_users_repository.dart';
 import '../../loan_users/models/borrower_connection_model.dart';
 import '../../loan_users/models/repayment_model.dart';
-import '../../new_loan/models/loan_model.dart';
+import '../../lender_dashboard/widgets/loan_item_tile.dart';
 
 /// Dashboard shown when the user is viewing the app as a **borrower**.
 class BorrowerDashboard extends ConsumerWidget {
-  const BorrowerDashboard({super.key});
+  const BorrowerDashboard({super.key, this.hasBothRoles = false});
+  final bool hasBothRoles;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final connectionsAsync = ref.watch(borrowerConnectionsProvider);
 
-    return Scaffold(
-      backgroundColor: DashboardTheme.surface,
-      body: RefreshIndicator(
-        color: DashboardTheme.accent,
-        onRefresh: () async => ref.invalidate(borrowerConnectionsProvider),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const DashboardAppBar(),
-              connectionsAsync.when(
-                loading: () => const Padding(
-                  padding: EdgeInsets.only(top: 120),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: DashboardTheme.accent,
-                    ),
+    return RefreshIndicator(
+      color: AppTheme.colors(context).accent,
+      onRefresh: () async => ref.invalidate(borrowerConnectionsProvider),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.only(top: hasBothRoles ? 160 : 135),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            connectionsAsync.when(
+              loading: () => Padding(
+                padding: EdgeInsets.only(top: 120),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: AppTheme.colors(context).accent,
                   ),
                 ),
-                error: (err, _) => Padding(
-                  padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-                  child: Text(
-                    'Error: $err',
-                    style: const TextStyle(color: DashboardTheme.danger),
-                  ),
-                ),
-                data: (connections) {
-                  if (connections.isEmpty) {
-                    return _buildEmptyState();
-                  }
-
-                  // Aggregate data
-                  final allLoans = connections.expand((c) => c.loans).toList();
-                  final activeLoans = allLoans
-                      .where(
-                        (l) => l.status == 'active' || l.status == 'overdue',
-                      )
-                      .toList();
-                  final totalBorrowed = allLoans.fold<double>(
-                    0,
-                    (s, l) => s + l.principal,
-                  );
-
-                  return Padding(
-                    padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ── Summary card ──
-                        _buildSummaryCard(
-                          connections.length,
-                          activeLoans.length,
-                          totalBorrowed,
-                        ),
-                        const SizedBox(height: DashboardTheme.spacingXl),
-
-                        // ── My Lenders ──
-                        const Text(
-                          'My Lenders',
-                          style: DashboardTheme.headingMedium,
-                        ),
-                        const SizedBox(height: DashboardTheme.spacingMd),
-                        ...connections.map((c) => _LenderCard(connection: c)),
-
-                        // ── Active Loans ──
-                        if (activeLoans.isNotEmpty) ...[
-                          const SizedBox(height: DashboardTheme.spacingXl),
-                          const Text(
-                            'Active Loans',
-                            style: DashboardTheme.headingMedium,
-                          ),
-                          const SizedBox(height: DashboardTheme.spacingMd),
-                          ...connections.expand(
-                            (c) => c.loans
-                                .where(
-                                  (l) =>
-                                      l.status == 'active' ||
-                                      l.status == 'overdue',
-                                )
-                                .map(
-                                  (l) => _BorrowerLoanCard(
-                                    loan: l,
-                                    lenderName: c.lenderName,
-                                  ),
-                                ),
-                          ),
-                        ],
-
-                        // ── Upcoming repayments per connection ──
-                        const SizedBox(height: DashboardTheme.spacingXl),
-                        const Text(
-                          'Upcoming Repayments',
-                          style: DashboardTheme.headingMedium,
-                        ),
-                        const SizedBox(height: DashboardTheme.spacingMd),
-                        ...connections.map(
-                          (c) => _UpcomingRepaymentsSection(
-                            connectionId: c.connectionId,
-                            lenderName: c.lenderName,
-                          ),
-                        ),
-
-                        const SizedBox(height: 120),
-                      ],
-                    ),
-                  );
-                },
               ),
-            ],
-          ),
+              error: (err, _) => Padding(
+                padding: EdgeInsets.all(AppTheme.spacingLg),
+                child: Text(
+                  'Error: $err',
+                  style: TextStyle(color: AppTheme.colors(context).danger),
+                ),
+              ),
+              data: (connections) {
+                if (connections.isEmpty) {
+                  return _buildEmptyState(context);
+                }
+
+                // Aggregate data
+                final allLoans = connections.expand((c) => c.loans).toList();
+                final activeLoans = allLoans
+                    .where((l) => l.status == 'active' || l.status == 'overdue')
+                    .toList();
+                final totalBorrowed = allLoans.fold<double>(
+                  0,
+                  (s, l) => s + l.principal,
+                );
+
+                return Padding(
+                  padding: EdgeInsets.all(AppTheme.spacingLg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Summary card ──
+                      _buildSummaryCard(
+                        context,
+                        connections.length,
+                        activeLoans.length,
+                        totalBorrowed,
+                      ),
+                      SizedBox(height: AppTheme.spacingXl),
+
+                      // ── My Lenders ──
+                      Text(
+                        'My Lenders',
+                        style: AppTheme.text(context).headingMedium,
+                      ),
+                      SizedBox(height: AppTheme.spacingMd),
+                      ...connections.map((c) => _LenderCard(connection: c)),
+
+                      // ── Active Loans ──
+                      if (activeLoans.isNotEmpty) ...[
+                        SizedBox(height: AppTheme.spacingXl),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Active Loans',
+                              style: AppTheme.text(context).headingMedium,
+                            ),
+                            TextButton(
+                              onPressed: () {},
+                              child: Text(
+                                'View All',
+                                style: AppTheme.text(context).bodyMedium
+                                    .copyWith(
+                                      color: AppTheme.colors(context).primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: AppTheme.spacingMd),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.colors(context).cardBackground,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white10
+                                  : Colors.black.withValues(alpha: 0.05),
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              ...(() {
+                                final activeLoanEntries = connections
+                                    .expand(
+                                      (c) => c.loans
+                                          .where(
+                                            (l) =>
+                                                l.status == 'active' ||
+                                                l.status == 'overdue',
+                                          )
+                                          .map(
+                                            (l) => (
+                                              loan: l,
+                                              lenderName: c.lenderName,
+                                            ),
+                                          ),
+                                    )
+                                    .toList();
+
+                                return activeLoanEntries.asMap().entries.map((
+                                  entry,
+                                ) {
+                                  final index = entry.key;
+                                  final item = entry.value;
+                                  return Column(
+                                    children: [
+                                      LoanItemTile(
+                                        borrowerName: item
+                                            .lenderName, // Using lender's name for borrower view
+                                        amount:
+                                            '${item.loan.currency} ${item.loan.principal.toStringAsFixed(0)}',
+                                        status: item.loan.status ?? 'active',
+                                        onTap: () {
+                                          // TODO: Navigate to loan details
+                                        },
+                                      ),
+                                      if (index < activeLoanEntries.length - 1)
+                                        const Divider(height: 1, indent: 68),
+                                    ],
+                                  );
+                                }).toList();
+                              })(),
+                            ],
+                          ),
+                        ),
+                      ],
+
+                      // ── Upcoming repayments per connection ──
+                      SizedBox(height: AppTheme.spacingXl),
+                      Text(
+                        'Upcoming Repayments',
+                        style: AppTheme.text(context).headingMedium,
+                      ),
+                      const SizedBox(height: AppTheme.spacingMd),
+                      ...connections.map(
+                        (c) => _UpcomingRepaymentsSection(
+                          connectionId: c.connectionId,
+                          lenderName: c.lenderName,
+                        ),
+                      ),
+
+                      const SizedBox(height: 120),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 80),
+      padding: EdgeInsets.only(top: 80),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -144,12 +199,12 @@ class BorrowerDashboard extends ConsumerWidget {
               size: 64,
               color: Colors.grey.shade400,
             ),
-            const SizedBox(height: DashboardTheme.spacingLg),
-            const Text('No Borrowings', style: DashboardTheme.headingMedium),
-            const SizedBox(height: DashboardTheme.spacingSm),
-            const Text(
+            SizedBox(height: AppTheme.spacingLg),
+            Text('No Borrowings', style: AppTheme.text(context).headingMedium),
+            SizedBox(height: AppTheme.spacingSm),
+            Text(
               'You don\'t have any active loans as a borrower.',
-              style: DashboardTheme.bodyMedium,
+              style: AppTheme.text(context).bodyMedium,
               textAlign: TextAlign.center,
             ),
           ],
@@ -159,21 +214,22 @@ class BorrowerDashboard extends ConsumerWidget {
   }
 
   Widget _buildSummaryCard(
+    BuildContext context,
     int lenderCount,
     int activeLoansCount,
     double totalBorrowed,
   ) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(DashboardTheme.spacingLg),
+      padding: EdgeInsets.all(AppTheme.spacingLg),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [DashboardTheme.accent, Color(0xFF00695C)],
+          colors: [AppTheme.colors(context).accent, Color(0xFF00695C)],
         ),
-        borderRadius: DashboardTheme.radiusLg,
-        boxShadow: DashboardTheme.elevatedShadow,
+        borderRadius: AppTheme.radiusLg,
+        boxShadow: AppTheme.elevatedShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,21 +242,24 @@ class BorrowerDashboard extends ConsumerWidget {
               color: Colors.white70,
             ),
           ),
-          const SizedBox(height: DashboardTheme.spacingLg),
+          const SizedBox(height: AppTheme.spacingLg),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _summaryItem(
+                context,
                 'Lenders',
                 lenderCount.toString(),
                 Icons.people_outline,
               ),
               _summaryItem(
+                context,
                 'Active Loans',
                 activeLoansCount.toString(),
                 Icons.receipt_long,
               ),
               _summaryItem(
+                context,
                 'Total Borrowed',
                 'PKR ${_formatAmount(totalBorrowed)}',
                 Icons.account_balance_wallet,
@@ -212,7 +271,12 @@ class BorrowerDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _summaryItem(String label, String value, IconData icon) {
+  Widget _summaryItem(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+  ) {
     return Column(
       children: [
         Icon(icon, color: Colors.white70, size: 24),
@@ -255,141 +319,46 @@ class _LenderCard extends StatelessWidget {
         : 'L';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: DashboardTheme.spacingMd),
-      padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-      decoration: DashboardTheme.cardDecoration,
+      margin: EdgeInsets.only(bottom: AppTheme.spacingMd),
+      padding: EdgeInsets.all(AppTheme.spacingLg),
+      decoration: AppTheme.cardDecoration(context),
       child: Row(
         children: [
           CircleAvatar(
             radius: 24,
-            backgroundColor: DashboardTheme.accentSurface,
+            backgroundColor: AppTheme.colors(context).accentSurface,
             child: Text(
               initial,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: DashboardTheme.accent,
+                color: AppTheme.colors(context).accent,
               ),
             ),
           ),
-          const SizedBox(width: DashboardTheme.spacingMd),
+          SizedBox(width: AppTheme.spacingMd),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   connection.lenderName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: DashboardTheme.textPrimary,
+                    color: AppTheme.colors(context).textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '$loanCount loan${loanCount != 1 ? 's' : ''}',
-                  style: DashboardTheme.bodyMedium,
+                  style: AppTheme.text(context).bodyMedium,
                 ),
               ],
             ),
           ),
           if (connection.lenderPhone != null)
             Icon(Icons.phone_outlined, size: 20, color: Colors.grey.shade400),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Borrower Loan Card ──────────────────────────────────────────────────
-
-class _BorrowerLoanCard extends StatelessWidget {
-  const _BorrowerLoanCard({required this.loan, required this.lenderName});
-  final LoanModel loan;
-  final String lenderName;
-
-  @override
-  Widget build(BuildContext context) {
-    final isOverdue = loan.status == 'overdue';
-    final daysLeft = loan.dueDate != null
-        ? loan.dueDate!.difference(DateTime.now()).inDays
-        : 0;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: DashboardTheme.spacingMd),
-      padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: DashboardTheme.radiusMd,
-        border: Border.all(
-          color: isOverdue
-              ? DashboardTheme.danger.withValues(alpha: 0.3)
-              : Colors.grey.shade200,
-        ),
-        boxShadow: DashboardTheme.cardShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${loan.currency} ${loan.principal.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: DashboardTheme.textPrimary,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: isOverdue
-                      ? DashboardTheme.dangerSurface
-                      : DashboardTheme.accentSurface,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  isOverdue ? 'OVERDUE' : 'ACTIVE',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: isOverdue
-                        ? DashboardTheme.danger
-                        : DashboardTheme.accent,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: DashboardTheme.spacingSm),
-          Text('Lender: $lenderName', style: DashboardTheme.bodyMedium),
-          if (loan.interestRate > 0)
-            Text(
-              'Interest: ${loan.interestRate}% (${loan.interestType})',
-              style: DashboardTheme.bodySmall,
-            ),
-          if (loan.dueDate != null) ...[
-            const SizedBox(height: DashboardTheme.spacingSm),
-            Text(
-              daysLeft >= 0
-                  ? '$daysLeft days remaining'
-                  : 'Overdue by ${-daysLeft} days',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: daysLeft < 0
-                    ? DashboardTheme.danger
-                    : (daysLeft < 30
-                          ? DashboardTheme.warning
-                          : DashboardTheme.accent),
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -428,11 +397,14 @@ class _UpcomingRepaymentsSection extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(bottom: DashboardTheme.spacingSm),
-              child: Text('From $lenderName', style: DashboardTheme.labelBold),
+              padding: EdgeInsets.only(bottom: AppTheme.spacingSm),
+              child: Text(
+                'From $lenderName',
+                style: AppTheme.text(context).labelBold,
+              ),
             ),
             ...upcoming.take(3).map((r) => _UpcomingTile(repayment: r)),
-            const SizedBox(height: DashboardTheme.spacingMd),
+            const SizedBox(height: AppTheme.spacingMd),
           ],
         );
       },
@@ -452,36 +424,36 @@ class _UpcomingTile extends StatelessWidget {
         : 0;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: DashboardTheme.spacingSm),
-      padding: const EdgeInsets.symmetric(
-        horizontal: DashboardTheme.spacingMd,
-        vertical: DashboardTheme.spacingSm,
+      margin: EdgeInsets.only(bottom: AppTheme.spacingSm),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppTheme.spacingMd,
+        vertical: AppTheme.spacingSm,
       ),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: DashboardTheme.radiusMd,
+        borderRadius: AppTheme.radiusMd,
         border: Border.all(
           color: daysLeft < 7
-              ? DashboardTheme.warningSurface
+              ? AppTheme.colors(context).warningSurface
               : Colors.grey.shade200,
         ),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: daysLeft < 7
-                  ? DashboardTheme.warningSurface
-                  : DashboardTheme.accentSurface,
+                  ? AppTheme.colors(context).warningSurface
+                  : AppTheme.colors(context).accentSurface,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               Icons.schedule,
               size: 20,
               color: daysLeft < 7
-                  ? DashboardTheme.warning
-                  : DashboardTheme.accent,
+                  ? AppTheme.colors(context).warning
+                  : AppTheme.colors(context).accent,
             ),
           ),
           const SizedBox(width: 12),
@@ -491,9 +463,9 @@ class _UpcomingTile extends StatelessWidget {
               children: [
                 Text(
                   'PKR ${repayment.amount.toStringAsFixed(0)}',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
-                Text('Due: $dateStr', style: DashboardTheme.bodySmall),
+                Text('Due: $dateStr', style: AppTheme.text(context).bodySmall),
               ],
             ),
           ),
@@ -503,10 +475,10 @@ class _UpcomingTile extends StatelessWidget {
               fontSize: 13,
               fontWeight: FontWeight.w700,
               color: daysLeft < 0
-                  ? DashboardTheme.danger
+                  ? AppTheme.colors(context).danger
                   : (daysLeft < 7
-                        ? DashboardTheme.warning
-                        : DashboardTheme.textTertiary),
+                        ? AppTheme.colors(context).warning
+                        : AppTheme.colors(context).textTertiary),
             ),
           ),
         ],

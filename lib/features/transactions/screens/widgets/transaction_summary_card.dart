@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../../providers/transactions_providers.dart';
 
 class TransactionSummaryCard extends ConsumerWidget {
@@ -14,28 +14,28 @@ class TransactionSummaryCard extends ConsumerWidget {
     final currencyFormatter = NumberFormat.currency(symbol: '\$');
 
     return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(20),
-      decoration: DashboardTheme.cardDecoration,
+      margin: EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
+      decoration: AppTheme.cardDecoration(context),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStat(
+          _buildStat(context, 
             label: 'Total In',
             amount: summary['in'] ?? 0.0,
-            color: DashboardTheme.success,
+            color: AppTheme.colors(context).success,
             icon: Icons.arrow_downward_rounded,
             formatter: currencyFormatter,
           ),
           Container(
             width: 1,
             height: 40,
-            color: Colors.grey.withValues(alpha: 0.2),
+            color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.2),
           ),
-          _buildStat(
+          _buildStat(context, 
             label: 'Total Out',
             amount: summary['out'] ?? 0.0,
-            color: DashboardTheme.danger,
+            color: AppTheme.colors(context).danger,
             icon: Icons.arrow_upward_rounded,
             formatter: currencyFormatter,
           ),
@@ -44,7 +44,7 @@ class TransactionSummaryCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildStat({
+  Widget _buildStat(BuildContext context, {
     required String label,
     required double amount,
     required Color color,
@@ -56,14 +56,14 @@ class TransactionSummaryCard extends ConsumerWidget {
         Row(
           children: [
             Icon(icon, size: 14, color: color),
-            const SizedBox(width: 4),
-            Text(label, style: DashboardTheme.bodySmall),
+            SizedBox(width: 4),
+            Text(label, style: AppTheme.text(context).bodySmall),
           ],
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Text(
           formatter.format(amount),
-          style: DashboardTheme.headingMedium.copyWith(color: color),
+          style: AppTheme.text(context).headingMedium.copyWith(color: color),
         ),
       ],
     );

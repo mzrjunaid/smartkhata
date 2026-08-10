@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/auth_providers.dart';
 import '../providers/profile_providers.dart';
 import '../providers/role_provider.dart';
-import '../../features/lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 
 /// Custom app bar with user greeting, role toggle, notification bell, and logout.
 class DashboardAppBar extends ConsumerWidget {
@@ -42,32 +43,52 @@ class DashboardAppBar extends ConsumerWidget {
 
     // Gradient colors adapt to the active role
     final gradientColors = isLender
-        ? const [DashboardTheme.primary, Color(0xFF2E7D32)]
-        : const [DashboardTheme.accent, Color(0xFF00695C)];
+        ? [AppTheme.colors(context).primary.withValues(alpha: 0.8), const Color(0xFF2E7D32).withValues(alpha: 0.7)]
+        : [AppTheme.colors(context).accent.withValues(alpha: 0.8), const Color(0xFF00695C).withValues(alpha: 0.7)];
 
     return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + DashboardTheme.spacingMd,
-        left: DashboardTheme.spacingLg,
-        right: DashboardTheme.spacingLg,
-        bottom: DashboardTheme.spacingLg,
+      margin: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + AppTheme.spacingMd,
+        left: AppTheme.spacingLg,
+        right: AppTheme.spacingLg,
+        bottom: AppTheme.spacingLg,
       ),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: gradientColors,
-        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            padding: const EdgeInsets.all(AppTheme.spacingLg),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: gradientColors,
+              ),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1.5,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
               if (showBackButton)
                 Padding(
                   padding: const EdgeInsets.only(
-                    right: DashboardTheme.spacingMd,
+                    right: AppTheme.spacingMd,
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -94,7 +115,7 @@ class DashboardAppBar extends ConsumerWidget {
                 ),
               ),
 
-              const SizedBox(width: DashboardTheme.spacingMd),
+              const SizedBox(width: AppTheme.spacingMd),
 
               // ── Greeting / Title ──────────────────────────────────────
               Expanded(
@@ -105,7 +126,7 @@ class DashboardAppBar extends ConsumerWidget {
                     if (subtitle != null || title == null)
                       Text(
                         subtitle ?? 'Welcome back,',
-                        style: DashboardTheme.bodyMedium.copyWith(
+                        style: AppTheme.text(context).bodyMedium.copyWith(
                           color: Colors.white70,
                         ),
                       ),
@@ -113,7 +134,7 @@ class DashboardAppBar extends ConsumerWidget {
                       const SizedBox(height: 2),
                     Text(
                       title ?? firstName,
-                      style: DashboardTheme.headingLarge.copyWith(
+                      style: AppTheme.text(context).headingLarge.copyWith(
                         color: Colors.white,
                         fontSize: title != null ? 22 : 20,
                       ),
@@ -127,9 +148,9 @@ class DashboardAppBar extends ConsumerWidget {
                 onPressed: () {
                   // TODO: Navigate to notifications screen.
                 },
-                icon: const Badge(
+                icon: Badge(
                   smallSize: 8,
-                  backgroundColor: DashboardTheme.danger,
+                  backgroundColor: AppTheme.colors(context).danger,
                   child: Icon(Icons.notifications_outlined),
                 ),
                 color: Colors.white,
@@ -159,7 +180,7 @@ class DashboardAppBar extends ConsumerWidget {
 
           // ── Role Toggle (only on home screens, and only if user has both roles) ──────
           if (!showBackButton && hasBothRoles) ...[
-            const SizedBox(height: DashboardTheme.spacingMd),
+            const SizedBox(height: AppTheme.spacingMd),
             Container(
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
@@ -193,6 +214,9 @@ class DashboardAppBar extends ConsumerWidget {
             ),
           ],
         ],
+      ),
+          ),
+        ),
       ),
     );
   }
@@ -229,7 +253,7 @@ class _RoleTab extends StatelessWidget {
             Icon(
               icon,
               size: 16,
-              color: isActive ? DashboardTheme.primary : Colors.white60,
+              color: isActive ? AppTheme.colors(context).primary : Colors.white60,
             ),
             const SizedBox(width: 6),
             Text(
@@ -237,7 +261,7 @@ class _RoleTab extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: isActive ? DashboardTheme.primary : Colors.white60,
+                color: isActive ? AppTheme.colors(context).primary : Colors.white60,
               ),
             ),
           ],

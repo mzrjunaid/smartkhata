@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../new_loan/models/connection_model.dart';
 import '../../../core/widgets/dashboard_app_bar.dart';
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../data/loan_users_repository.dart';
 
 class LoanUsersScreen extends ConsumerWidget {
@@ -16,17 +16,17 @@ class LoanUsersScreen extends ConsumerWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: DashboardTheme.surface,
+        backgroundColor: AppTheme.colors(context).surface,
         body: Column(
           children: [
-            const DashboardAppBar(
+            DashboardAppBar(
               title: 'Loan Users',
               subtitle: 'Manage your connections',
             ),
-            const TabBar(
-              labelColor: DashboardTheme.primary,
-              unselectedLabelColor: DashboardTheme.textSecondary,
-              indicatorColor: DashboardTheme.primary,
+            TabBar(
+              labelColor: AppTheme.colors(context).primary,
+              unselectedLabelColor: AppTheme.colors(context).textSecondary,
+              indicatorColor: AppTheme.colors(context).primary,
               tabs: [
                 Tab(text: 'Claimed (Active)'),
                 Tab(text: 'Invited (Pending)'),
@@ -34,23 +34,23 @@ class LoanUsersScreen extends ConsumerWidget {
             ),
             Expanded(
               child: connectionsAsync.when(
-                loading: () => const Center(
+                loading: () => Center(
                   child: CircularProgressIndicator(
-                    color: DashboardTheme.primary,
+                    color: AppTheme.colors(context).primary,
                   ),
                 ),
                 error: (error, stack) => Center(
                   child: Text(
                     'Error loading users: $error',
-                    style: const TextStyle(color: DashboardTheme.danger),
+                    style: TextStyle(color: AppTheme.colors(context).danger),
                   ),
                 ),
                 data: (connections) {
                   final claimed = connections
-                      .where((c) => c.claimStatus == 'claimed')
+                      .where((c) => c.status == 'active' && c.claimStatus == 'claimed')
                       .toList();
                   final invited = connections
-                      .where((c) => c.claimStatus == 'invited')
+                      .where((c) => c.status == 'pending' || c.claimStatus == 'invited')
                       .toList();
 
                   return TabBarView(
@@ -81,7 +81,7 @@ class _UserList extends StatelessWidget {
       return Center(
         child: Text(
           isInvitedTab ? 'No pending invitations.' : 'No active users yet.',
-          style: const TextStyle(color: DashboardTheme.textSecondary),
+          style: TextStyle(color: AppTheme.colors(context).textSecondary),
         ),
       );
     }
@@ -102,6 +102,16 @@ class _UserCard extends ConsumerWidget {
 
   final ConnectionModel connection;
 
+  String _formatDuration(int days) {
+    if (days >= 30) {
+      final months = days ~/ 30;
+      final remainingDays = days % 30;
+      if (remainingDays == 0) return '$months month${months > 1 ? 's' : ''}';
+      return '$months month${months > 1 ? 's' : ''}, $remainingDays day${remainingDays != 1 ? 's' : ''}';
+    }
+    return '$days day${days != 1 ? 's' : ''}';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isVerified = connection.lenderVerifiedAt != null;
@@ -112,11 +122,11 @@ class _UserCard extends ConsumerWidget {
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: DashboardTheme.cardBackground,
+          color: AppTheme.colors(context).cardBackground,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: DashboardTheme.cardShadow,
+          boxShadow: AppTheme.cardShadow,
         ),
         child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,82 +134,82 @@ class _UserCard extends ConsumerWidget {
           Row(
             children: [
               CircleAvatar(
-                backgroundColor: DashboardTheme.primary.withValues(alpha: 0.1),
+                backgroundColor: AppTheme.colors(context).primary.withValues(alpha: 0.1),
                 radius: 24,
                 child: Text(
                   connection.borrowerName.substring(0, 1).toUpperCase(),
-                  style: const TextStyle(
-                    color: DashboardTheme.primary,
+                  style: TextStyle(
+                    color: AppTheme.colors(context).primary,
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       connection.borrowerName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: DashboardTheme.textPrimary,
+                        color: AppTheme.colors(context).textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'CNIC: ${connection.borrowerCnic}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        color: DashboardTheme.textSecondary,
+                        color: AppTheme.colors(context).textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
               if (isVerified)
-                const Icon(Icons.verified, color: Colors.green, size: 28),
+                Icon(Icons.verified, color: Colors.green, size: 28),
             ],
           ),
           if (connection.borrowerEmail != null ||
               connection.borrowerPhone != null) ...[
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 8),
+            SizedBox(height: 16),
+            Divider(),
+            SizedBox(height: 8),
             if (connection.borrowerEmail != null)
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.email_outlined,
                     size: 16,
-                    color: DashboardTheme.textSecondary,
+                    color: AppTheme.colors(context).textSecondary,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     connection.borrowerEmail!,
-                    style: const TextStyle(
-                      color: DashboardTheme.textSecondary,
+                    style: TextStyle(
+                      color: AppTheme.colors(context).textSecondary,
                       fontSize: 13,
                     ),
                   ),
                 ],
               ),
             if (connection.borrowerPhone != null) ...[
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.phone_outlined,
                     size: 16,
-                    color: DashboardTheme.textSecondary,
+                    color: AppTheme.colors(context).textSecondary,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
                     connection.borrowerPhone!,
-                    style: const TextStyle(
-                      color: DashboardTheme.textSecondary,
+                    style: TextStyle(
+                      color: AppTheme.colors(context).textSecondary,
                       fontSize: 13,
                     ),
                   ),
@@ -210,8 +220,6 @@ class _UserCard extends ConsumerWidget {
 
           if (connection.loans.isNotEmpty) ...[
             const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 8),
             ...connection.loans.map((loan) {
               final totalPeriod = loan.dueDate != null && loan.disbursedAt != null
                   ? loan.dueDate!.difference(loan.disbursedAt!).inDays
@@ -228,11 +236,19 @@ class _UserCard extends ConsumerWidget {
               final totalWithInterest = loan.principal + interestAmount;
 
               return Container(
-                padding: const EdgeInsets.all(12),
+                margin: EdgeInsets.only(top: 8),
+                padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: DashboardTheme.primarySurface.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: DashboardTheme.primaryLight.withValues(alpha: 0.3)),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.colors(context).primary.withValues(alpha: 0.15),
+                      AppTheme.colors(context).primary.withValues(alpha: 0.05),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.colors(context).primary.withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,32 +256,47 @@ class _UserCard extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Active Loan',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: DashboardTheme.primary,
-                          ),
+                        Row(
+                          children: [
+                            Icon(Icons.account_balance_wallet, color: AppTheme.colors(context).primary, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Active Loan',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.colors(context).primary,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          '${loan.currency} ${totalWithInterest.toStringAsFixed(0)} total',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: DashboardTheme.textPrimary,
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.colors(context).primary,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${loan.currency} ${totalWithInterest.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    _LoanDetailRow(label: 'Principal:', value: '${loan.currency} ${loan.principal.toStringAsFixed(0)}'),
-                    _LoanDetailRow(label: 'Interest (${loan.interestRate}%):', value: '${loan.currency} ${interestAmount.toStringAsFixed(0)}'),
+                    const SizedBox(height: 16),
+                    _LoanDetailRow(label: 'Principal', value: '${loan.currency} ${loan.principal.toStringAsFixed(0)}'),
+                    _LoanDetailRow(label: 'Interest (${loan.interestRate}%)', value: '${loan.currency} ${interestAmount.toStringAsFixed(0)}'),
                     if (loan.disbursedAt != null)
-                      _LoanDetailRow(label: 'Disbursed:', value: '${loan.disbursedAt!.day}/${loan.disbursedAt!.month}/${loan.disbursedAt!.year}'),
-                    _LoanDetailRow(label: 'Total Period:', value: '$totalPeriod days'),
+                      _LoanDetailRow(label: 'Disbursed', value: '${loan.disbursedAt!.day}/${loan.disbursedAt!.month}/${loan.disbursedAt!.year}'),
+                    _LoanDetailRow(label: 'Total Period', value: _formatDuration(totalPeriod)),
                     _LoanDetailRow(
-                      label: 'Time Remaining:', 
-                      value: durationRemaining >= 0 ? '$durationRemaining days' : 'Overdue by ${-durationRemaining} days',
-                      valueColor: durationRemaining < 0 ? DashboardTheme.danger : null,
+                      label: 'Time Remaining', 
+                      value: durationRemaining >= 0 ? _formatDuration(durationRemaining) : 'Overdue by ${_formatDuration(-durationRemaining)}',
+                      valueColor: durationRemaining < 0 ? AppTheme.colors(context).danger : null,
                     ),
                   ],
                 ),
@@ -301,7 +332,7 @@ class _UserCard extends ConsumerWidget {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: DashboardTheme.primary,
+                  backgroundColor: AppTheme.colors(context).primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -332,15 +363,15 @@ class _LoanDetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: EdgeInsets.only(bottom: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: DashboardTheme.textSecondary,
+              color: AppTheme.colors(context).textSecondary,
             ),
           ),
           Text(
@@ -348,7 +379,7 @@ class _LoanDetailRow extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: valueColor ?? DashboardTheme.textPrimary,
+              color: valueColor ?? AppTheme.colors(context).textPrimary,
             ),
           ),
         ],

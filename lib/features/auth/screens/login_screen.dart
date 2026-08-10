@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/providers/auth_providers.dart';
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -79,7 +79,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: DashboardTheme.surface,
+      backgroundColor: AppTheme.colors(context).surface,
       body: Stack(
         children: [
           // Background abstract shapes
@@ -91,7 +91,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: DashboardTheme.primary.withValues(alpha: 0.08),
+                color: AppTheme.colors(context).primary.withValues(alpha: 0.08),
               ),
             ),
           ),
@@ -103,7 +103,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: DashboardTheme.accent.withValues(alpha: 0.08),
+                color: AppTheme.colors(context).accent.withValues(alpha: 0.08),
               ),
             ),
           ),
@@ -111,7 +111,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
+                padding: EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 40,
                 ),
@@ -130,11 +130,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: DashboardTheme.primary.withValues(
+                                  color: AppTheme.colors(context).primary.withValues(
                                     alpha: 0.15,
                                   ),
                                   blurRadius: 24,
-                                  offset: const Offset(0, 12),
+                                  offset: Offset(0, 12),
                                 ),
                               ],
                             ),
@@ -149,30 +149,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                           ),
                         ),
-                        const SizedBox(height: 32),
-                        const Text(
+                        SizedBox(height: 32),
+                        Text(
                           'Welcome Back',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color: DashboardTheme.textPrimary,
+                            color: AppTheme.colors(context).textPrimary,
                             letterSpacing: -0.5,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
+                        SizedBox(height: 8),
+                        Text(
                           'Sign in to continue to SmartKhata',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
-                            color: DashboardTheme.textSecondary,
+                            color: AppTheme.colors(context).textSecondary,
                           ),
                         ),
-                        const SizedBox(height: 40),
+                        SizedBox(height: 40),
                         // Form Card
                         Container(
-                          padding: const EdgeInsets.all(28),
+                          padding: EdgeInsets.all(28),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(24),
@@ -180,7 +180,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.04),
                                 blurRadius: 24,
-                                offset: const Offset(0, 8),
+                                offset: Offset(0, 8),
                               ),
                             ],
                           ),
@@ -193,23 +193,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   name: 'email',
                                   decoration: InputDecoration(
                                     labelText: 'Email Address',
-                                    labelStyle: const TextStyle(
-                                      color: DashboardTheme.textSecondary,
+                                    labelStyle: TextStyle(
+                                      color: AppTheme.colors(context).textSecondary,
                                     ),
-                                    prefixIcon: const Icon(
+                                    prefixIcon: Icon(
                                       Icons.email_outlined,
-                                      color: DashboardTheme.primary,
+                                      color: AppTheme.colors(context).primary,
                                     ),
                                     filled: true,
-                                    fillColor: DashboardTheme.surface,
+                                    fillColor: AppTheme.colors(context).surface,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
                                       borderSide: BorderSide.none,
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
-                                      borderSide: const BorderSide(
-                                        color: DashboardTheme.primary,
+                                      borderSide: BorderSide(
+                                        color: AppTheme.colors(context).primary,
                                         width: 2,
                                       ),
                                     ),
@@ -220,24 +220,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     FormBuilderValidators.email(),
                                   ]),
                                 ),
-                                const SizedBox(height: 20),
+                                SizedBox(height: 20),
                                 FormBuilderTextField(
                                   name: 'password',
                                   decoration: InputDecoration(
                                     labelText: 'Password',
-                                    labelStyle: const TextStyle(
-                                      color: DashboardTheme.textSecondary,
+                                    labelStyle: TextStyle(
+                                      color: AppTheme.colors(context).textSecondary,
                                     ),
-                                    prefixIcon: const Icon(
+                                    prefixIcon: Icon(
                                       Icons.lock_outline,
-                                      color: DashboardTheme.primary,
+                                      color: AppTheme.colors(context).primary,
                                     ),
                                     suffixIcon: IconButton(
                                       icon: Icon(
                                         _obscurePassword
                                             ? Icons.visibility_outlined
                                             : Icons.visibility_off_outlined,
-                                        color: DashboardTheme.textTertiary,
+                                        color: AppTheme.colors(context).textTertiary,
                                       ),
                                       onPressed: () {
                                         setState(() {
@@ -246,15 +246,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                       },
                                     ),
                                     filled: true,
-                                    fillColor: DashboardTheme.surface,
+                                    fillColor: AppTheme.colors(context).surface,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
                                       borderSide: BorderSide.none,
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
-                                      borderSide: const BorderSide(
-                                        color: DashboardTheme.primary,
+                                      borderSide: BorderSide(
+                                        color: AppTheme.colors(context).primary,
                                         width: 2,
                                       ),
                                     ),
@@ -262,29 +262,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   obscureText: _obscurePassword,
                                   validator: FormBuilderValidators.required(),
                                 ),
-                                const SizedBox(height: 32),
+                                SizedBox(height: 32),
                                 if (_error != null)
                                   Padding(
-                                    padding: const EdgeInsets.only(bottom: 24),
+                                    padding: EdgeInsets.only(bottom: 24),
                                     child: Container(
-                                      padding: const EdgeInsets.all(12),
+                                      padding: EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: DashboardTheme.dangerSurface,
+                                        color: AppTheme.colors(context).dangerSurface,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Row(
                                         children: [
-                                          const Icon(
+                                          Icon(
                                             Icons.error_outline,
-                                            color: DashboardTheme.danger,
+                                            color: AppTheme.colors(context).danger,
                                             size: 20,
                                           ),
-                                          const SizedBox(width: 8),
+                                          SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
                                               _error!,
-                                              style: const TextStyle(
-                                                color: DashboardTheme.danger,
+                                              style: TextStyle(
+                                                color: AppTheme.colors(context).danger,
                                                 fontSize: 13,
                                               ),
                                             ),
@@ -296,9 +296,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                 ElevatedButton(
                                   onPressed: _loading ? null : _submit,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: DashboardTheme.primary,
+                                    backgroundColor: AppTheme.colors(context).primary,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
+                                    padding: EdgeInsets.symmetric(
                                       vertical: 18,
                                     ),
                                     shape: RoundedRectangleBorder(
@@ -307,7 +307,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     elevation: 0,
                                   ),
                                   child: _loading
-                                      ? const SizedBox(
+                                      ? SizedBox(
                                           height: 24,
                                           width: 24,
                                           child: CircularProgressIndicator(
@@ -315,7 +315,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                             strokeWidth: 3,
                                           ),
                                         )
-                                      : const Text(
+                                      : Text(
                                           'Login',
                                           style: TextStyle(
                                             fontSize: 16,
@@ -328,23 +328,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        SizedBox(height: 32),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
+                            Text(
                               "Don't have an account?",
                               style: TextStyle(
-                                color: DashboardTheme.textSecondary,
+                                color: AppTheme.colors(context).textSecondary,
                                 fontSize: 15,
                               ),
                             ),
                             TextButton(
                               onPressed: () => context.go('/signup'),
-                              child: const Text(
+                              child: Text(
                                 'Sign up',
                                 style: TextStyle(
-                                  color: DashboardTheme.primary,
+                                  color: AppTheme.colors(context).primary,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
                                 ),

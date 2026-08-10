@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../providers/audit_logs_providers.dart';
 import 'widgets/audit_log_tile.dart';
 
@@ -12,9 +12,9 @@ class AuditLogsScreen extends ConsumerWidget {
     final logsAsync = ref.watch(auditLogsProvider);
 
     return Scaffold(
-      backgroundColor: DashboardTheme.surface,
+      backgroundColor: AppTheme.colors(context).surface,
       appBar: AppBar(
-        backgroundColor: DashboardTheme.primary,
+        backgroundColor: AppTheme.colors(context).primary,
         foregroundColor: Colors.white,
         title: const Text(
           'Audit Logs',
@@ -28,10 +28,10 @@ class AuditLogsScreen extends ConsumerWidget {
         error: (err, _) => Center(child: Text('Error: \$err')),
         data: (logs) {
           if (logs.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 'No audit logs found.',
-                style: DashboardTheme.bodyLarge,
+                style: AppTheme.text(context).bodyLarge,
               ),
             );
           }

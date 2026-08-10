@@ -63,7 +63,11 @@ final filteredTransactionsProvider = Provider<AsyncValue<List<TransactionModel>>
         filtered = filtered.where((t) => t.direction == TransactionDirection.moneyOut).toList();
         break;
       case TransactionFilterType.pending:
-        filtered = filtered.where((t) => t.status == 'pending').toList();
+        filtered = filtered.where((t) {
+          return t.status == 'pending' || 
+                 t.status == 'draft' || 
+                 t.status == 'pending_disbursement';
+        }).toList();
         break;
       case TransactionFilterType.all:
         break;

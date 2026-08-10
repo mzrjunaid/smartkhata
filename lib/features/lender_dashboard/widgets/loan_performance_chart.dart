@@ -4,35 +4,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../providers/dashboard_providers.dart';
-import '../theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import 'section_header.dart';
 
-/// Bar chart comparing monthly Disbursed vs Collected for the last 6 months.
-///
-/// Uses `fl_chart` and self-manages its async state via [monthlyStatsProvider].
+/// A modern, sleek Line (Area) chart comparing monthly Disbursed vs Collected.
+/// Uses `fl_chart` and self-manages its async state.
 class LoanPerformanceChart extends ConsumerWidget {
   const LoanPerformanceChart({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(monthlyStatsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(title: 'Loan Performance'),
+        SectionHeader(title: 'Loan Performance'),
         Container(
-          margin: const EdgeInsets.symmetric(
-            horizontal: DashboardTheme.spacingLg,
+          margin: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingLg,
           ),
-          padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-          decoration: DashboardTheme.cardDecoration,
+          padding: EdgeInsets.all(AppTheme.spacingLg),
+          decoration: AppTheme.cardDecoration(context),
           child: statsAsync.when(
-            loading: () => _buildShimmer(),
+            loading: () => _buildShimmer(context, isDark),
             error: (e, _) => SizedBox(
               height: 200,
               child: Center(
-                child: Text('Error: $e', style: DashboardTheme.bodyMedium),
+                child: Text('Error: $e', style: AppTheme.text(context).bodyMedium),
               ),
             ),
             data: (stats) {
@@ -42,33 +42,34 @@ class LoanPerformanceChart extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _legendDot(DashboardTheme.primary, 'Disbursed'),
-                      const SizedBox(width: DashboardTheme.spacingLg),
-                      _legendDot(DashboardTheme.accent, 'Collected'),
+                      _legendDot(context, AppTheme.colors(context).primary, 'Disbursed'),
+                      SizedBox(width: AppTheme.spacingLg),
+                      _legendDot(context, AppTheme.colors(context).accent, 'Collected'),
                     ],
                   ),
 
-                  const SizedBox(height: DashboardTheme.spacingLg),
+                  const SizedBox(height: AppTheme.spacingLg),
 
                   // ── Chart ─────────────────────────────────────────
                   SizedBox(
-                    height: 200,
-                    child: BarChart(
-                      BarChartData(
-                        alignment: BarChartAlignment.spaceAround,
+                    height: 180,
+                    child: LineChart(
+                      LineChartData(
+                        minY: 0,
                         maxY: _maxY(stats),
-                        barTouchData: BarTouchData(
-                          touchTooltipData: BarTouchTooltipData(
-                            getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                              final label =
-                                  rodIndex == 0 ? 'Disbursed' : 'Collected';
-                              return BarTooltipItem(
-                                '$label\n₨ ${_compact(rod.toY)}',
-                                DashboardTheme.bodySmall.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              );
+                        lineTouchData: LineTouchData(
+                          touchTooltipData: LineTouchTooltipData(
+                            getTooltipItems: (touchedSpots) {
+                              return touchedSpots.map((spot) {
+                                final label = spot.barIndex == 0 ? 'Disbursed' : 'Collected';
+                                return LineTooltipItem(
+                                  '$label\n₨ ${_compact(spot.y)}',
+                                  AppTheme.text(context).bodySmall.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                );
+                              }).toList();
                             },
                           ),
                         ),
@@ -86,24 +87,17 @@ class LoanPerformanceChart extends ConsumerWidget {
                                   padding: const EdgeInsets.only(top: 8),
                                   child: Text(
                                     stats[idx].month,
-                                    style: DashboardTheme.bodySmall,
+                                    style: AppTheme.text(context).bodySmall.copyWith(
+                                      color: isDark ? Colors.white60 : Colors.black54,
+                                    ),
                                   ),
                                 );
                               },
                               reservedSize: 30,
                             ),
                           ),
-                          leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 50,
-                              getTitlesWidget: (value, meta) {
-                                return Text(
-                                  _compact(value),
-                                  style: DashboardTheme.bodySmall,
-                                );
-                              },
-                            ),
+                          leftTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
                           ),
                           topTitles: const AxisTitles(
                             sideTitles: SideTitles(showTitles: false),
@@ -118,35 +112,51 @@ class LoanPerformanceChart extends ConsumerWidget {
                           drawVerticalLine: false,
                           horizontalInterval: _maxY(stats) / 4,
                           getDrawingHorizontalLine: (value) => FlLine(
-                            color: Colors.grey.shade200,
+                            color: isDark ? Colors.white10 : Colors.grey.shade200,
                             strokeWidth: 1,
+                            dashArray: [5, 5],
                           ),
                         ),
-                        barGroups: [
-                          for (int i = 0; i < stats.length; i++)
-                            BarChartGroupData(
-                              x: i,
-                              barRods: [
-                                BarChartRodData(
-                                  toY: stats[i].disbursed,
-                                  color: DashboardTheme.primary,
-                                  width: 12,
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(4),
-                                    topRight: Radius.circular(4),
-                                  ),
-                                ),
-                                BarChartRodData(
-                                  toY: stats[i].collected,
-                                  color: DashboardTheme.accent,
-                                  width: 12,
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(4),
-                                    topRight: Radius.circular(4),
-                                  ),
-                                ),
-                              ],
+                        lineBarsData: [
+                          // Collected Line
+                          LineChartBarData(
+                            spots: [
+                              for (int i = 0; i < stats.length; i++)
+                                FlSpot(i.toDouble(), stats[i].collected),
+                            ],
+                            isCurved: true,
+                            color: AppTheme.colors(context).accent,
+                            barWidth: 3,
+                            isStrokeCapRound: true,
+                            dotData: FlDotData(show: false),
+                            belowBarData: BarAreaData(
+                              show: true,
+                              color: AppTheme.colors(context).accent.withValues(alpha: 0.1),
                             ),
+                          ),
+                          // Disbursed Line
+                          LineChartBarData(
+                            spots: [
+                              for (int i = 0; i < stats.length; i++)
+                                FlSpot(i.toDouble(), stats[i].disbursed),
+                            ],
+                            isCurved: true,
+                            color: AppTheme.colors(context).primary,
+                            barWidth: 3,
+                            isStrokeCapRound: true,
+                            dotData: FlDotData(show: false),
+                            belowBarData: BarAreaData(
+                              show: true,
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppTheme.colors(context).primary.withValues(alpha: 0.3),
+                                  AppTheme.colors(context).primary.withValues(alpha: 0.0),
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -160,7 +170,7 @@ class LoanPerformanceChart extends ConsumerWidget {
     );
   }
 
-  Widget _legendDot(Color color, String label) {
+  Widget _legendDot(BuildContext context, Color color, String label) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -169,11 +179,11 @@ class LoanPerformanceChart extends ConsumerWidget {
           height: 10,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(3),
+            shape: BoxShape.circle,
           ),
         ),
         const SizedBox(width: 6),
-        Text(label, style: DashboardTheme.bodyMedium),
+        Text(label, style: AppTheme.text(context).bodyMedium),
       ],
     );
   }
@@ -184,6 +194,7 @@ class LoanPerformanceChart extends ConsumerWidget {
       if (s.disbursed > max) max = s.disbursed;
       if (s.collected > max) max = s.collected;
     }
+    if (max == 0) return 100;
     return max * 1.2; // 20% headroom
   }
 
@@ -193,19 +204,23 @@ class LoanPerformanceChart extends ConsumerWidget {
     return value.toStringAsFixed(0);
   }
 
-  Widget _buildShimmer() {
+  Widget _buildShimmer(BuildContext context, bool isDark) {
+    final baseColor = isDark ? Colors.grey.shade800 : Colors.grey.shade200;
+    final highlightColor = isDark ? Colors.grey.shade700 : Colors.grey.shade50;
+    final blockColor = isDark ? Colors.grey.shade900 : Colors.white;
+
     return Shimmer.fromColors(
-      baseColor: Colors.grey.shade200,
-      highlightColor: Colors.grey.shade50,
+      baseColor: baseColor,
+      highlightColor: highlightColor,
       child: Column(
         children: [
-          Container(width: 200, height: 14, color: Colors.white),
-          const SizedBox(height: DashboardTheme.spacingLg),
+          Container(width: 200, height: 14, color: blockColor),
+          const SizedBox(height: AppTheme.spacingLg),
           Container(
-            height: 200,
+            height: 180,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: DashboardTheme.radiusMd,
+              color: blockColor,
+              borderRadius: AppTheme.radiusMd,
             ),
           ),
         ],

@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/providers/profile_providers.dart';
 import '../../../core/widgets/dashboard_app_bar.dart';
-import '../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 
 /// Fetches the full editable profile for the current user.
 final _fullProfileProvider = FutureProvider<Map<String, dynamic>>((ref) async {
@@ -103,9 +103,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       setState(() => _isEditing = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Profile updated successfully'),
-            backgroundColor: DashboardTheme.success,
+            backgroundColor: AppTheme.colors(context).success,
           ),
         );
       }
@@ -114,7 +114,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Update failed: $e'),
-            backgroundColor: DashboardTheme.danger,
+            backgroundColor: AppTheme.colors(context).danger,
           ),
         );
       }
@@ -128,44 +128,44 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final profileAsync = ref.watch(_fullProfileProvider);
 
     return Scaffold(
-      backgroundColor: DashboardTheme.surface,
+      backgroundColor: AppTheme.colors(context).surface,
       body: Column(
         children: [
-          const DashboardAppBar(title: 'My Profile', showBackButton: false),
+          DashboardAppBar(title: 'My Profile', showBackButton: false),
           Expanded(
             child: profileAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: DashboardTheme.primary),
+              loading: () => Center(
+                child: CircularProgressIndicator(color: AppTheme.colors(context).primary),
               ),
               error: (err, _) => Center(
                 child: Text(
                   'Error: $err',
-                  style: const TextStyle(color: DashboardTheme.danger),
+                  style: TextStyle(color: AppTheme.colors(context).danger),
                 ),
               ),
               data: (profile) {
                 _initControllers(profile);
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.all(DashboardTheme.spacingLg),
+                  padding: const EdgeInsets.all(AppTheme.spacingLg),
                   child: Form(
                     key: _formKey,
                     child: Column(
                       children: [
                         // ── Avatar header card ──
-                        _buildAvatarCard(),
-                        const SizedBox(height: DashboardTheme.spacingXl),
+                        _buildAvatarCard(context),
+                        const SizedBox(height: AppTheme.spacingXl),
 
                         // ── Info card ──
-                        _buildInfoCard(),
-                        const SizedBox(height: DashboardTheme.spacingXl),
+                        _buildInfoCard(context),
+                        const SizedBox(height: AppTheme.spacingXl),
 
                         // ── Account details ──
-                        _buildAccountCard(),
-                        const SizedBox(height: DashboardTheme.spacingXl),
+                        _buildAccountCard(context),
+                        const SizedBox(height: AppTheme.spacingXl),
 
                         // ── Action buttons ──
-                        _buildActions(),
-                        const SizedBox(height: 80),
+                        _buildActions(context),
+                        const SizedBox(height: 120),
                       ],
                     ),
                   ),
@@ -180,24 +180,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   // ── Avatar & Name Header ──────────────────────────────────────────────
 
-  Widget _buildAvatarCard() {
+  Widget _buildAvatarCard(BuildContext context) {
     final name = _nameController.text.trim();
     final initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        vertical: DashboardTheme.spacingXxl,
-        horizontal: DashboardTheme.spacingLg,
+      padding: EdgeInsets.symmetric(
+        vertical: AppTheme.spacingXxl,
+        horizontal: AppTheme.spacingLg,
       ),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [DashboardTheme.primary, Color(0xFF2E7D32)],
+          colors: [AppTheme.colors(context).primary, Color(0xFF2E7D32)],
         ),
-        borderRadius: DashboardTheme.radiusLg,
-        boxShadow: DashboardTheme.elevatedShadow,
+        borderRadius: AppTheme.radiusLg,
+        boxShadow: AppTheme.elevatedShadow,
       ),
       child: Column(
         children: [
@@ -223,7 +223,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
           ),
-          const SizedBox(height: DashboardTheme.spacingMd),
+          const SizedBox(height: AppTheme.spacingMd),
           Text(
             name.isNotEmpty ? name : 'User',
             style: const TextStyle(
@@ -233,7 +233,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
           if (_cnic.isNotEmpty) ...[
-            const SizedBox(height: DashboardTheme.spacingSm),
+            const SizedBox(height: AppTheme.spacingSm),
             Text(
               'CNIC: $_cnic',
               style: TextStyle(
@@ -249,24 +249,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   // ── Editable Personal Info ────────────────────────────────────────────
 
-  Widget _buildInfoCard() {
+  Widget _buildInfoCard(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-      decoration: DashboardTheme.cardDecoration,
+      padding: EdgeInsets.all(AppTheme.spacingLg),
+      decoration: AppTheme.cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Personal Information',
-                style: DashboardTheme.headingMedium,
+                style: AppTheme.text(context).headingMedium,
               ),
               IconButton(
                 icon: Icon(
                   _isEditing ? Icons.close : Icons.edit_outlined,
-                  color: DashboardTheme.primary,
+                  color: AppTheme.colors(context).primary,
                   size: 22,
                 ),
                 tooltip: _isEditing ? 'Cancel' : 'Edit',
@@ -281,7 +281,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ],
           ),
-          const SizedBox(height: DashboardTheme.spacingLg),
+          SizedBox(height: AppTheme.spacingLg),
 
           // Full Name
           _buildField(
@@ -292,16 +292,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             validator: (v) =>
                 (v == null || v.trim().isEmpty) ? 'Name is required' : null,
           ),
-          const SizedBox(height: DashboardTheme.spacingMd),
+          SizedBox(height: AppTheme.spacingMd),
 
           // CNIC (read-only always)
-          _buildReadOnlyField(
+          _buildReadOnlyField(context, 
             label: 'CNIC',
             icon: Icons.credit_card,
             value: _cnic.isNotEmpty ? _cnic : '—',
             helperText: 'CNIC can only be updated by your lender',
           ),
-          const SizedBox(height: DashboardTheme.spacingMd),
+          SizedBox(height: AppTheme.spacingMd),
 
           // Phone
           _buildField(
@@ -314,7 +314,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               FilteringTextInputFormatter.allow(RegExp(r'[0-9+\- ]')),
             ],
           ),
-          const SizedBox(height: DashboardTheme.spacingMd),
+          SizedBox(height: AppTheme.spacingMd),
 
           // Email
           _buildField(
@@ -327,14 +327,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
           // Save button when editing
           if (_isEditing) ...[
-            const SizedBox(height: DashboardTheme.spacingXl),
+            SizedBox(height: AppTheme.spacingXl),
             SizedBox(
               width: double.infinity,
               height: 48,
               child: ElevatedButton.icon(
                 onPressed: _isSaving ? null : _saveProfile,
                 icon: _isSaving
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
@@ -342,13 +342,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : const Icon(Icons.check, color: Colors.white),
+                    : Icon(Icons.check, color: Colors.white),
                 label: Text(
                   _isSaving ? 'Saving...' : 'Save Changes',
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: DashboardTheme.primary,
+                  backgroundColor: AppTheme.colors(context).primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -363,7 +363,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   // ── Account Details (read-only) ───────────────────────────────────────
 
-  Widget _buildAccountCard() {
+  Widget _buildAccountCard(BuildContext context) {
     final displayClaim = _claimStatus.isNotEmpty
         ? '${_claimStatus[0].toUpperCase()}${_claimStatus.substring(1)}'
         : '—';
@@ -372,20 +372,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         : '—';
 
     return Container(
-      padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-      decoration: DashboardTheme.cardDecoration,
+      padding: EdgeInsets.all(AppTheme.spacingLg),
+      decoration: AppTheme.cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Account Details', style: DashboardTheme.headingMedium),
-          const SizedBox(height: DashboardTheme.spacingLg),
-          _buildDetailRow(
+          Text('Account Details', style: AppTheme.text(context).headingMedium),
+          const SizedBox(height: AppTheme.spacingLg),
+          _buildDetailRow(context, 
             Icons.verified_user_outlined,
             'Claim Status',
             displayClaim,
           ),
           const Divider(height: 24),
-          _buildDetailRow(
+          _buildDetailRow(context, 
             Icons.calendar_today_outlined,
             'Member Since',
             joinedDate,
@@ -397,16 +397,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   // ── Action Buttons ────────────────────────────────────────────────────
 
-  Widget _buildActions() {
+  Widget _buildActions(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(DashboardTheme.spacingLg),
-      decoration: DashboardTheme.cardDecoration,
+      padding: EdgeInsets.all(AppTheme.spacingLg),
+      decoration: AppTheme.cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Security', style: DashboardTheme.headingMedium),
-          const SizedBox(height: DashboardTheme.spacingMd),
-          _buildActionTile(
+          Text('Security', style: AppTheme.text(context).headingMedium),
+          const SizedBox(height: AppTheme.spacingMd),
+          _buildActionTile(context, 
             icon: Icons.lock_outline,
             title: 'Change Password',
             subtitle: 'Update your account password',
@@ -436,40 +436,41 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       inputFormatters: inputFormatters,
       style: TextStyle(
         color: enabled
-            ? DashboardTheme.textPrimary
-            : DashboardTheme.textSecondary,
+            ? AppTheme.colors(context).textPrimary
+            : AppTheme.colors(context).textSecondary,
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(color: AppTheme.colors(context).textSecondary),
         prefixIcon: Icon(
           icon,
-          color: enabled ? DashboardTheme.primary : DashboardTheme.textTertiary,
+          color: enabled ? AppTheme.colors(context).primary : AppTheme.colors(context).textTertiary,
           size: 22,
         ),
         filled: true,
-        fillColor: enabled ? Colors.white : DashboardTheme.surface,
+        fillColor: enabled ? AppTheme.colors(context).surface : AppTheme.colors(context).primarySurface.withValues(alpha: 0.3),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.3)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.3)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: DashboardTheme.primary, width: 2),
+          borderSide: BorderSide(color: AppTheme.colors(context).primary, width: 2),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade200),
+          borderSide: BorderSide(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.1)),
         ),
       ),
     );
   }
 
-  Widget _buildReadOnlyField({
+  Widget _buildReadOnlyField(BuildContext context, {
     required String label,
     required IconData icon,
     required String value,
@@ -480,54 +481,54 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
           decoration: BoxDecoration(
-            color: DashboardTheme.surface,
+            color: AppTheme.colors(context).surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
+            border: Border.all(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.2)),
           ),
           child: Row(
             children: [
-              Icon(icon, color: DashboardTheme.textTertiary, size: 22),
-              const SizedBox(width: 12),
+              Icon(icon, color: AppTheme.colors(context).textTertiary, size: 22),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       label,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: DashboardTheme.textTertiary,
+                        color: AppTheme.colors(context).textTertiary,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       value,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w500,
-                        color: DashboardTheme.textSecondary,
+                        color: AppTheme.colors(context).textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.lock,
                 size: 16,
-                color: DashboardTheme.textTertiary,
+                color: AppTheme.colors(context).textTertiary,
               ),
             ],
           ),
         ),
         if (helperText != null)
           Padding(
-            padding: const EdgeInsets.only(left: 12, top: 4),
+            padding: EdgeInsets.only(left: 12, top: 4),
             child: Text(
               helperText,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
-                color: DashboardTheme.textTertiary,
+                color: AppTheme.colors(context).textTertiary,
               ),
             ),
           ),
@@ -535,34 +536,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value) {
+  Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: DashboardTheme.primarySurface,
+            color: AppTheme.colors(context).primarySurface,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: DashboardTheme.primary, size: 20),
+          child: Icon(icon, color: AppTheme.colors(context).primary, size: 20),
         ),
-        const SizedBox(width: 14),
+        SizedBox(width: 14),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
-                  color: DashboardTheme.textTertiary,
+                  color: AppTheme.colors(context).textTertiary,
                 ),
               ),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: DashboardTheme.textPrimary,
+                  color: AppTheme.colors(context).textPrimary,
                 ),
               ),
             ],
@@ -572,7 +573,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildActionTile({
+  Widget _buildActionTile(BuildContext context, {
     required IconData icon,
     required String title,
     required String subtitle,
@@ -582,40 +583,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: DashboardTheme.spacingSm),
+        padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: DashboardTheme.warningSurface,
+                color: AppTheme.colors(context).warningSurface,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: DashboardTheme.warning, size: 22),
+              child: Icon(icon, color: AppTheme.colors(context).warning, size: 22),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: DashboardTheme.textPrimary,
+                      color: AppTheme.colors(context).textPrimary,
                     ),
                   ),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: DashboardTheme.textSecondary,
+                      color: AppTheme.colors(context).textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: DashboardTheme.textTertiary),
+            Icon(Icons.chevron_right, color: AppTheme.colors(context).textTertiary),
           ],
         ),
       ),
@@ -632,25 +633,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Change Password'),
+          backgroundColor: AppTheme.colors(context).cardBackground,
+          title: Text('Change Password', style: AppTheme.text(context).headingMedium),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: newPassController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                style: TextStyle(color: AppTheme.colors(context).textPrimary),
+                decoration: InputDecoration(
                   labelText: 'New Password',
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: AppTheme.colors(context).textSecondary),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.3)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppTheme.colors(context).primary),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: confirmPassController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                style: TextStyle(color: AppTheme.colors(context).textPrimary),
+                decoration: InputDecoration(
                   labelText: 'Confirm Password',
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: AppTheme.colors(context).textSecondary),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.3)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppTheme.colors(context).primary),
+                  ),
                 ),
               ),
             ],
@@ -684,9 +700,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   if (context.mounted) {
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
+                      SnackBar(
                         content: Text('Password updated successfully'),
-                        backgroundColor: DashboardTheme.success,
+                        backgroundColor: AppTheme.colors(context).success,
                       ),
                     );
                   }
@@ -695,7 +711,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Error: $e'),
-                        backgroundColor: DashboardTheme.danger,
+                        backgroundColor: AppTheme.colors(context).danger,
                       ),
                     );
                   }

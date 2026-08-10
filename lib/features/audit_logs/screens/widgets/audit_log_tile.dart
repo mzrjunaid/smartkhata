@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../lender_dashboard/theme/dashboard_theme.dart';
+import 'package:smartkhata/core/theme/app_theme.dart';
 import '../../models/audit_log_model.dart';
 
 class AuditLogTile extends StatelessWidget {
@@ -12,38 +12,38 @@ class AuditLogTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final changes = log.getChanges();
-    final actionColor = _getActionColor(log.action);
-    final iconData = _getActionIcon(log.action);
+    final actionColor = _getActionColor(context, log.action);
+    final iconData = _getActionIcon(context, log.action);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: DashboardTheme.cardDecoration,
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: EdgeInsets.all(16),
+      decoration: AppTheme.cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: actionColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(iconData, size: 16, color: actionColor),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       log.actorName ?? 'System',
-                      style: DashboardTheme.headingSmall,
+                      style: AppTheme.text(context).headingSmall,
                     ),
                     Text(
                       DateFormat('MMM d, yyyy - h:mm a').format(log.createdAt),
-                      style: DashboardTheme.bodySmall,
+                      style: AppTheme.text(context).bodySmall,
                     ),
                   ],
                 ),
@@ -101,20 +101,20 @@ class AuditLogTile extends StatelessWidget {
     );
   }
 
-  Color _getActionColor(String action) {
+  Color _getActionColor(BuildContext context, String action) {
     switch (action.toLowerCase()) {
       case 'inserted':
-        return DashboardTheme.success;
+        return AppTheme.colors(context).success;
       case 'updated':
-        return DashboardTheme.primary;
+        return AppTheme.colors(context).primary;
       case 'deleted':
-        return DashboardTheme.danger;
+        return AppTheme.colors(context).danger;
       default:
         return Colors.grey;
     }
   }
 
-  IconData _getActionIcon(String action) {
+  IconData _getActionIcon(BuildContext context, String action) {
     switch (action.toLowerCase()) {
       case 'inserted':
         return Icons.add;
