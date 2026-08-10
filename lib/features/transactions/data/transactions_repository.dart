@@ -49,6 +49,11 @@ class TransactionsRepository {
       final borrower = conn['borrower'] as Map<String, dynamic>?;
       final status = loan['status'] as String? ?? 'active';
       
+      // Exclude loans that haven't resulted in an actual transaction
+      if (status == 'draft' || status == 'pending_disbursement' || status == 'cancelled') {
+        continue;
+      }
+      
       final counterpartyName = isLender 
           ? (borrower?['full_name'] as String? ?? 'Unknown') 
           : (lender?['full_name'] as String? ?? 'Unknown');

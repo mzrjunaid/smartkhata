@@ -33,13 +33,7 @@ class RecentActivityCard extends ConsumerWidget {
           margin: EdgeInsets.symmetric(
             horizontal: AppTheme.spacingLg,
           ),
-          decoration: BoxDecoration(
-            color: AppTheme.colors(context).cardBackground,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-            ),
-          ),
+          decoration: AppTheme.cardDecoration(context),
           child: activityAsync.when(
             loading: () => _buildShimmer(context),
             error: (e, _) => Padding(

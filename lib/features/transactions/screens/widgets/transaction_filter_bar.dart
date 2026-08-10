@@ -15,7 +15,7 @@ class TransactionFilterBar extends ConsumerWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
         children: [
           _buildDateRangeButton(context, ref, dateRange),
@@ -123,7 +123,9 @@ class TransactionFilterBar extends ConsumerWidget {
               ? AppTheme.colors(context).primary.withValues(alpha: 0.1)
               : AppTheme.colors(context).cardBackground,
           border: Border.all(
-            color: isActive ? AppTheme.colors(context).primary : AppTheme.colors(context).textTertiary.withValues(alpha: 0.3),
+            color: isActive
+                ? AppTheme.colors(context).primary
+                : AppTheme.colors(context).textTertiary.withValues(alpha: 0.3),
           ),
           borderRadius: BorderRadius.circular(20),
         ),
@@ -132,7 +134,9 @@ class TransactionFilterBar extends ConsumerWidget {
             Icon(
               Icons.calendar_today,
               size: 14,
-              color: isActive ? AppTheme.colors(context).primary : AppTheme.colors(context).textSecondary,
+              color: isActive
+                  ? AppTheme.colors(context).primary
+                  : AppTheme.colors(context).textSecondary,
             ),
             SizedBox(width: 6),
             Text(
@@ -140,7 +144,9 @@ class TransactionFilterBar extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: isActive ? AppTheme.colors(context).primary : AppTheme.colors(context).textSecondary,
+                color: isActive
+                    ? AppTheme.colors(context).primary
+                    : AppTheme.colors(context).textSecondary,
               ),
             ),
             if (isActive) ...[
@@ -173,15 +179,21 @@ class TransactionFilterBar extends ConsumerWidget {
         duration: Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? AppTheme.colors(context).primary : AppTheme.colors(context).cardBackground,
+          color: isActive
+              ? AppTheme.colors(context).primary
+              : AppTheme.colors(context).cardBackground,
           border: Border.all(
-            color: isActive ? AppTheme.colors(context).primary : AppTheme.colors(context).textTertiary.withValues(alpha: 0.3),
+            color: isActive
+                ? AppTheme.colors(context).primary
+                : AppTheme.colors(context).textTertiary.withValues(alpha: 0.3),
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: isActive
               ? [
                   BoxShadow(
-                    color: AppTheme.colors(context).primary.withValues(alpha: 0.3),
+                    color: AppTheme.colors(
+                      context,
+                    ).primary.withValues(alpha: 0.3),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -193,7 +205,9 @@ class TransactionFilterBar extends ConsumerWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
-            color: isActive ? Colors.white : AppTheme.colors(context).textSecondary,
+            color: isActive
+                ? Colors.white
+                : AppTheme.colors(context).textSecondary,
           ),
         ),
       ),

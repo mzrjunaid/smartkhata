@@ -61,7 +61,7 @@ class LoanPerformanceChart extends ConsumerWidget {
                           touchTooltipData: LineTouchTooltipData(
                             getTooltipItems: (touchedSpots) {
                               return touchedSpots.map((spot) {
-                                final label = spot.barIndex == 0 ? 'Disbursed' : 'Collected';
+                                final label = spot.barIndex == 0 ? 'Collected' : 'Disbursed';
                                 return LineTooltipItem(
                                   '$label\n₨ ${_compact(spot.y)}',
                                   AppTheme.text(context).bodySmall.copyWith(

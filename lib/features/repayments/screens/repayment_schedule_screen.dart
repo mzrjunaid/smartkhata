@@ -152,7 +152,12 @@ class RepaymentScheduleScreen extends ConsumerWidget {
       0.0,
       (sum, item) => sum + item.amount,
     );
-    final double totalLoan = connection.loans.fold(
+    final validLoans = connection.loans.where((l) => 
+        l.status != 'draft' && 
+        l.status != 'pending_disbursement' && 
+        l.status != 'cancelled');
+
+    final double totalLoan = validLoans.fold(
       0.0,
       (sum, l) => sum + (l.totalAmount > 0 ? l.totalAmount : l.principal),
     );

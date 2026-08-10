@@ -61,9 +61,14 @@ class LoanItemTile extends StatelessWidget {
         child: Row(
           children: [
             // ── Avatar ──────────────────────────────────────────────
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: AppTheme.colors(context).primarySurface,
+            Container(
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppTheme.colors(context).primarySurface,
+                borderRadius: AppTheme.radiusSm,
+              ),
               child: Text(
                 initials,
                 style: AppTheme.text(

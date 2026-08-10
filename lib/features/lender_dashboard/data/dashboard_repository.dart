@@ -26,11 +26,19 @@ class DashboardRepository {
     double totalLent = 0;
     int activeLoansCount = 0;
     int overdueCount = 0;
+    int validLoansCount = 0;
     
     final loanIds = <String>[];
 
     for (final loan in loans) {
       final status = loan['status'] as String;
+      
+      if (status == 'draft' || status == 'pending_disbursement' || status == 'cancelled') {
+        continue;
+      }
+      
+      validLoansCount++;
+      
       if (status == 'active' || status == 'completed' || status == 'overdue') {
         totalLent += (loan['principal_amount'] as num).toDouble();
       }
@@ -72,7 +80,7 @@ class DashboardRepository {
       totalLent: totalLent,
       totalReceived: totalReceived,
       outstandingBalance: outstandingBalance > 0 ? outstandingBalance : 0,
-      totalLoansCount: loans.length,
+      totalLoansCount: validLoansCount,
       activeLoansCount: activeLoansCount,
       overdueCount: overdueCount,
       monthlyInterestEarned: monthlyInterestEarned,
@@ -168,7 +176,7 @@ class DashboardRepository {
         
         // Disbursements: only count loans created within the time range
         final status = loan['status'] as String;
-        if (status != 'draft' && status != 'rejected') {
+        if (status != 'draft' && status != 'pending_disbursement' && status != 'cancelled' && status != 'rejected') {
           final createdAtStr = loan['created_at'] as String?;
           if (createdAtStr != null) {
             final createdAt = DateTime.parse(createdAtStr);

@@ -50,12 +50,7 @@ class _LenderDashboardState extends ConsumerState<LenderDashboard> {
                 ? BorrowerDashboard(hasBothRoles: hasBothRoles)
                 : _buildLenderView(context, hasBothRoles),
           ),
-          const Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: DashboardAppBar(),
-          ),
+          const Positioned(top: 0, left: 0, right: 0, child: DashboardAppBar()),
         ],
       ),
     );
@@ -68,7 +63,7 @@ class _LenderDashboardState extends ConsumerState<LenderDashboard> {
       child: SingleChildScrollView(
         key: const ValueKey('LenderView'),
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.only(top: hasBothRoles ? 160 : 135),
+        padding: EdgeInsets.only(top: hasBothRoles ? 190 : 135),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [

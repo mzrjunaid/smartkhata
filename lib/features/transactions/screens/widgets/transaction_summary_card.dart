@@ -14,13 +14,14 @@ class TransactionSummaryCard extends ConsumerWidget {
     final currencyFormatter = NumberFormat.currency(symbol: '\$');
 
     return Container(
-      margin: EdgeInsets.all(20),
-      padding: EdgeInsets.all(20),
+      margin: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 10),
+      padding: EdgeInsets.all(15),
       decoration: AppTheme.cardDecoration(context),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStat(context, 
+          _buildStat(
+            context,
             label: 'Total In',
             amount: summary['in'] ?? 0.0,
             color: AppTheme.colors(context).success,
@@ -32,7 +33,8 @@ class TransactionSummaryCard extends ConsumerWidget {
             height: 40,
             color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.2),
           ),
-          _buildStat(context, 
+          _buildStat(
+            context,
             label: 'Total Out',
             amount: summary['out'] ?? 0.0,
             color: AppTheme.colors(context).danger,
@@ -44,7 +46,8 @@ class TransactionSummaryCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildStat(BuildContext context, {
+  Widget _buildStat(
+    BuildContext context, {
     required String label,
     required double amount,
     required Color color,

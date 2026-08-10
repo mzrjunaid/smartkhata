@@ -53,6 +53,16 @@ class BorrowerProfileScreen extends ConsumerWidget {
                       _buildHeader(context, connection, creditScoreAsync),
                       const SizedBox(height: AppTheme.spacingXl),
 
+                      _buildInvitedLoansSection(
+                        context,
+                        'Invited Loans (Pending)',
+                        connection.loans
+                            .where(
+                              (l) => l.status == 'draft' || l.status == 'pending_disbursement',
+                            )
+                            .toList(),
+                      ),
+
                       _buildLoansSection(context, 
                         'Active Loans',
                         connection.loans
@@ -213,6 +223,148 @@ class BorrowerProfileScreen extends ConsumerWidget {
             color: AppTheme.colors(context).textSecondary,
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildInvitedLoansSection(BuildContext context, String title, List<LoanModel> loans) {
+    if (loans.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.colors(context).textPrimary,
+          ),
+        ),
+        SizedBox(height: AppTheme.spacingMd),
+        ...loans.map((loan) {
+          final now = DateTime.now();
+          final created = loan.createdAt ?? now;
+          final expiry = created.add(const Duration(hours: 72));
+          final remaining = expiry.difference(now);
+          final isExpired = remaining.isNegative;
+          
+          final progress = isExpired 
+              ? 1.0 
+              : (72 - remaining.inHours) / 72.0;
+              
+          final remainingText = isExpired 
+              ? 'Expired' 
+              : '${remaining.inHours}h ${remaining.inMinutes.remainder(60)}m remaining';
+
+          return Container(
+            margin: EdgeInsets.only(bottom: AppTheme.spacingMd),
+            decoration: AppTheme.cardDecoration(context),
+            padding: EdgeInsets.all(AppTheme.spacingLg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.colors(context).warningSurface,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.schedule_send,
+                            color: AppTheme.colors(context).warning,
+                            size: 20,
+                          ),
+                        ),
+                        SizedBox(width: AppTheme.spacingMd),
+                        Text(
+                          'Pending Invitation',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.colors(context).textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isExpired ? AppTheme.colors(context).dangerSurface : AppTheme.colors(context).warningSurface,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        isExpired ? 'EXPIRED' : (loan.status?.toUpperCase() ?? 'PENDING'),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: isExpired ? AppTheme.colors(context).danger : AppTheme.colors(context).warning,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: AppTheme.spacingLg),
+                Text(
+                  'Proposed Amount',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.colors(context).textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${loan.currency} ${loan.principal.toStringAsFixed(0)}',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.colors(context).textPrimary,
+                  ),
+                ),
+                SizedBox(height: AppTheme.spacingLg),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Expiry Progress (72h limit)',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.colors(context).textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      remainingText,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isExpired ? AppTheme.colors(context).danger : AppTheme.colors(context).warning,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: progress.clamp(0.0, 1.0),
+                    backgroundColor: AppTheme.colors(context).warningSurface,
+                    color: isExpired ? AppTheme.colors(context).danger : AppTheme.colors(context).warning,
+                    minHeight: 6,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+        const SizedBox(height: AppTheme.spacingXl),
       ],
     );
   }

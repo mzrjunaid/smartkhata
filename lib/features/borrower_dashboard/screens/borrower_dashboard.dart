@@ -20,7 +20,7 @@ class BorrowerDashboard extends ConsumerWidget {
       onRefresh: () async => ref.invalidate(borrowerConnectionsProvider),
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.only(top: hasBothRoles ? 160 : 135),
+        padding: EdgeInsets.only(top: hasBothRoles ? 190 : 135),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
