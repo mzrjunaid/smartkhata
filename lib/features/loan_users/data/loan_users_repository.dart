@@ -1,0 +1,232 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../new_loan/models/connection_model.dart';
+import '../../../core/providers/profile_providers.dart';
+
+import '../models/repayment_model.dart';
+import '../models/credit_score_model.dart';
+import '../models/borrower_connection_model.dart';
+
+final loanUsersRepositoryProvider = Provider<LoanUsersRepository>((ref) {
+  return LoanUsersRepository(Supabase.instance.client);
+});
+
+class LoanUsersRepository {
+  LoanUsersRepository(this._client);
+  final SupabaseClient _client;
+
+  /// Returns the profile ID for the currently authenticated user.
+  Future<String> _currentProfileId() async {
+    final authUserId = _client.auth.currentUser!.id;
+    final row = await _client
+        .from('profiles')
+        .select('id')
+        .eq('auth_user_id', authUserId)
+        .single();
+    return row['id'] as String;
+  }
+
+  Future<List<ConnectionModel>> fetchActiveConnections(String lenderId) async {
+    final response = await _client
+        .from('connections')
+        .select('''
+          id,
+          borrower_profile_id,
+          status,
+          lender_verified_at,
+          profiles!connections_borrower_profile_id_fkey (
+            full_name,
+            cnic,
+            phone,
+            email,
+            claim_status
+          ),
+          loans ( * )
+        ''')
+        .eq('lender_profile_id', lenderId)
+        .eq('status', 'active');
+
+    return (response as List).map<ConnectionModel>((json) {
+      return ConnectionModel.fromJson(json as Map<String, dynamic>);
+    }).toList();
+  }
+
+  /// Fetches connections where the given profile is the **borrower**.
+  Future<List<BorrowerConnectionModel>> fetchBorrowerConnections(String borrowerId) async {
+    final response = await _client
+        .from('connections')
+        .select('''
+          id,
+          status,
+          profiles!connections_lender_profile_id_fkey (
+            full_name,
+            phone,
+            email
+          ),
+          loans ( * )
+        ''')
+        .eq('borrower_profile_id', borrowerId)
+        .eq('status', 'active');
+
+    return (response as List).map<BorrowerConnectionModel>((json) {
+      return BorrowerConnectionModel.fromJson(json as Map<String, dynamic>);
+    }).toList();
+  }
+
+  Future<ConnectionModel> fetchConnectionDetails(String connectionId) async {
+    final response = await _client
+        .from('connections')
+        .select('''
+          id,
+          borrower_profile_id,
+          status,
+          lender_verified_at,
+          profiles!connections_borrower_profile_id_fkey (
+            full_name,
+            cnic,
+            phone,
+            email,
+            claim_status
+          ),
+          loans ( * )
+        ''')
+        .eq('id', connectionId)
+        .single();
+
+    return ConnectionModel.fromJson(response);
+  }
+
+  Future<void> updateConnectionStatus(String connectionId, String status) async {
+    await _client.from('connections').update({'status': status}).eq('id', connectionId);
+  }
+
+  Future<void> verifyConnection(String connectionId) async {
+    await _client.rpc('verify_connection', params: {
+      'p_connection_id': connectionId,
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> fetchConnectionRepayments(String connectionId) async {
+    final response = await _client
+        .from('repayments')
+        .select('''
+          id, loan_id, amount, status, method, note, paid_date, due_date, created_at,
+          loans!inner(connection_id)
+        ''')
+        .eq('loans.connection_id', connectionId)
+        .order('due_date', ascending: true, nullsFirst: false)
+        .order('created_at', ascending: false);
+
+    return List<Map<String, dynamic>>.from(response as List);
+  }
+
+  Future<void> updateRepaymentSchedule(String repaymentId, DateTime newDueDate, double newAmount) async {
+    await _client.from('repayments').update({
+      'due_date': newDueDate.toIso8601String(),
+      'amount': newAmount,
+    }).eq('id', repaymentId);
+  }
+
+  Future<void> deleteRepayment(String repaymentId) async {
+    await _client.from('repayments').delete().eq('id', repaymentId);
+  }
+
+  Future<void> addScheduledRepayment(String loanId, DateTime dueDate, double amount) async {
+    final profileId = await _currentProfileId();
+    await _client.from('repayments').insert({
+      'loan_id': loanId,
+      'amount': amount,
+      'status': 'pending',
+      'due_date': dueDate.toIso8601String(),
+      'recorded_by': profileId,
+    });
+  }
+
+  Future<void> generateMonthlySchedule(String loanId, double totalAmount, DateTime startDate, int months) async {
+    if (months <= 0) return;
+
+    final profileId = await _currentProfileId();
+    final double monthlyAmount = totalAmount / months;
+    final List<Map<String, dynamic>> batch = [];
+
+    for (int i = 1; i <= months; i++) {
+      // Calculate next due date by adding 'i' months to start date
+      final nextDueDate = DateTime(startDate.year, startDate.month + i, startDate.day);
+      
+      batch.add({
+        'loan_id': loanId,
+        'amount': double.parse(monthlyAmount.toStringAsFixed(2)),
+        'status': 'pending',
+        'due_date': nextDueDate.toIso8601String(),
+        'recorded_by': profileId,
+      });
+    }
+
+    await _client.from('repayments').insert(batch);
+  }
+
+  Future<Map<String, dynamic>?> fetchCreditScore(String borrowerProfileId) async {
+    final response = await _client
+        .from('credit_scores')
+        .select()
+        .eq('profile_id', borrowerProfileId)
+        .maybeSingle();
+        
+    return response;
+  }
+
+  Future<RepaymentModel> fetchRepaymentById(String repaymentId) async {
+    final response = await _client
+        .from('repayments')
+        .select('*')
+        .eq('id', repaymentId)
+        .single();
+    
+    return RepaymentModel.fromJson(response);
+  }
+
+  Future<void> updateRepayment(String repaymentId, Map<String, dynamic> data) async {
+    await _client
+        .from('repayments')
+        .update(data)
+        .eq('id', repaymentId);
+  }
+}
+
+final activeConnectionsProvider = FutureProvider<List<ConnectionModel>>((ref) async {
+  final String currentProfileId = await ref.watch(currentProfileIdProvider.future);
+  final repo = ref.watch(loanUsersRepositoryProvider);
+  return repo.fetchActiveConnections(currentProfileId);
+});
+
+/// Connections where the current user is the **borrower**.
+final borrowerConnectionsProvider = FutureProvider<List<BorrowerConnectionModel>>((ref) async {
+  final String currentProfileId = await ref.watch(currentProfileIdProvider.future);
+  final repo = ref.watch(loanUsersRepositoryProvider);
+  return repo.fetchBorrowerConnections(currentProfileId);
+});
+
+final connectionDetailsProvider = FutureProvider.family<ConnectionModel, String>((ref, connectionId) async {
+  final repo = ref.watch(loanUsersRepositoryProvider);
+  return repo.fetchConnectionDetails(connectionId);
+});
+
+final connectionRepaymentsProvider = FutureProvider.family<List<RepaymentModel>, String>((ref, connectionId) async {
+  final repo = ref.watch(loanUsersRepositoryProvider);
+  final data = await repo.fetchConnectionRepayments(connectionId);
+  return data.map((json) => RepaymentModel.fromJson(json)).toList();
+});
+
+final borrowerCreditScoreProvider = FutureProvider.family<CreditScoreModel?, String>((ref, borrowerProfileId) async {
+  final repo = ref.watch(loanUsersRepositoryProvider);
+  final data = await repo.fetchCreditScore(borrowerProfileId);
+  if (data == null) return null;
+  return CreditScoreModel.fromJson(data);
+});
+
+final repaymentDetailsProvider = FutureProvider.family<RepaymentModel, String>((ref, repaymentId) async {
+  final repo = ref.watch(loanUsersRepositoryProvider);
+  return repo.fetchRepaymentById(repaymentId);
+});
+
