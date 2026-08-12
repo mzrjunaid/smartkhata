@@ -64,10 +64,10 @@ class TransactionsRepository {
           category = 'Draft Loan';
           break;
         case 'pending_disbursement':
-          category = 'Pending Disbursement';
+          category = isLender ? 'Pending Disbursement' : 'Pending Receipt';
           break;
         case 'active':
-          category = 'Loan Disbursed';
+          category = isLender ? 'Loan Disbursed' : 'Loan Received';
           break;
         case 'completed':
           category = 'Loan Completed';
@@ -114,7 +114,7 @@ class TransactionsRepository {
         date: DateTime.parse(rep['created_at'] as String),
         counterpartyName: counterpartyName,
         direction: isLender ? TransactionDirection.moneyIn : TransactionDirection.moneyOut,
-        category: 'Repayment',
+        category: isLender ? 'Repayment Received' : 'Repayment Made',
         status: status,
         notes: rep['note'] as String?,
         dueDate: rep['due_date'] != null ? DateTime.parse(rep['due_date'] as String) : null,

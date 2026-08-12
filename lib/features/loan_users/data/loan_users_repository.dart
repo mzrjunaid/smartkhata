@@ -7,6 +7,7 @@ import '../../../core/providers/profile_providers.dart';
 import '../models/repayment_model.dart';
 import '../models/credit_score_model.dart';
 import '../models/borrower_connection_model.dart';
+import '../models/top_lender_model.dart';
 
 final loanUsersRepositoryProvider = Provider<LoanUsersRepository>((ref) {
   return LoanUsersRepository(Supabase.instance.client);
@@ -132,6 +133,7 @@ class LoanUsersRepository {
         .select('''
           id,
           status,
+          lender_profile_id,
           profiles!connections_lender_profile_id_fkey (
             full_name,
             phone,
@@ -140,11 +142,57 @@ class LoanUsersRepository {
           loans ( * )
         ''')
         .eq('borrower_profile_id', borrowerId)
-        .eq('status', 'active');
+        .inFilter('status', ['active', 'pending']);
 
-    return (response as List).map<BorrowerConnectionModel>((json) {
-      return BorrowerConnectionModel.fromJson(json as Map<String, dynamic>);
+
+
+    // 2. Fetch pending invitations where this borrower is the invited user
+    final invitationsResponse = await _client
+        .from('invitations')
+        .select('''
+          id,
+          status,
+          invited_by,
+          profiles!invitations_invited_by_fkey (
+            full_name,
+            phone,
+            email
+          )
+        ''')
+        .eq('profile_id', borrowerId)
+        .eq('status', 'pending');
+
+    final pendingInvitationLenderIds = (invitationsResponse as List)
+        .map((inv) => inv['invited_by'] as String?)
+        .where((id) => id != null)
+        .toSet();
+
+    // Map active/pending connections and set hasPendingInvitation flag
+    final activeAndPendingConnections = (response as List).map<BorrowerConnectionModel>((json) {
+      final hasInv = pendingInvitationLenderIds.contains(json['lender_profile_id'] as String?);
+      final jsonWithInv = Map<String, dynamic>.from(json as Map<String, dynamic>);
+      jsonWithInv['hasPendingInvitation'] = hasInv;
+      return BorrowerConnectionModel.fromJson(jsonWithInv);
     }).toList();
+
+    final purePendingInvitations = (invitationsResponse as List).map<BorrowerConnectionModel>((json) {
+      final lenderProfile = json['profiles'] as Map<String, dynamic>?;
+      final jsonWithInv = Map<String, dynamic>.from(json as Map<String, dynamic>);
+      jsonWithInv['hasPendingInvitation'] = true;
+      return BorrowerConnectionModel.fromJson(jsonWithInv);
+    }).toList();
+
+    // Combine them. Exclude pure invitations if a connection already exists for that lender
+    final existingLenderIds = activeAndPendingConnections
+        .map((c) => c.lenderProfileId)
+        .where((id) => id != null)
+        .toSet();
+
+    final uniqueInvitations = purePendingInvitations
+        .where((inv) => !existingLenderIds.contains(inv.lenderProfileId))
+        .toList();
+
+    return [...activeAndPendingConnections, ...uniqueInvitations];
   }
 
   Future<ConnectionModel> fetchConnectionDetails(String connectionId) async {
@@ -162,6 +210,11 @@ class LoanUsersRepository {
             email,
             claim_status
           ),
+          lender:profiles!connections_lender_profile_id_fkey (
+            full_name,
+            phone,
+            email
+          ),
           loans ( * )
         ''')
         .eq('id', connectionId)
@@ -172,6 +225,25 @@ class LoanUsersRepository {
 
   Future<void> updateConnectionStatus(String connectionId, String status) async {
     await _client.from('connections').update({'status': status}).eq('id', connectionId);
+  }
+
+  Future<void> updateLoanStatus(String loanId, String status) async {
+    await _client.rpc('lender_update_loan_status', params: {
+      'p_loan_id': loanId,
+      'p_status': status,
+    });
+  }
+
+  Future<void> acceptLoan(String loanId) async {
+    await _client.rpc('accept_loan', params: {
+      'p_loan_id': loanId,
+    });
+  }
+
+  Future<void> acceptConnectionInvitation(String lenderProfileId) async {
+    await _client.rpc('accept_connection_invitation', params: {
+      'p_lender_profile_id': lenderProfileId,
+    });
   }
 
   Future<void> verifyConnection(String connectionId) async {
@@ -265,6 +337,11 @@ class LoanUsersRepository {
         .update(data)
         .eq('id', repaymentId);
   }
+
+  Future<List<TopLenderModel>> fetchTopLenders() async {
+    final response = await _client.rpc('get_top_lenders');
+    return (response as List).map((json) => TopLenderModel.fromJson(json as Map<String, dynamic>)).toList();
+  }
 }
 
 final activeConnectionsProvider = FutureProvider<List<ConnectionModel>>((ref) async {
@@ -301,5 +378,10 @@ final borrowerCreditScoreProvider = FutureProvider.family<CreditScoreModel?, Str
 final repaymentDetailsProvider = FutureProvider.family<RepaymentModel, String>((ref, repaymentId) async {
   final repo = ref.watch(loanUsersRepositoryProvider);
   return repo.fetchRepaymentById(repaymentId);
+});
+
+final topLendersProvider = FutureProvider<List<TopLenderModel>>((ref) async {
+  final repo = ref.watch(loanUsersRepositoryProvider);
+  return repo.fetchTopLenders();
 });
 

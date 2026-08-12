@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import 'package:smartkhata/core/theme/app_theme.dart';
@@ -35,7 +36,7 @@ class StyledFormField extends StatelessWidget {
   final bool obscureText;
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
-  final List<dynamic>? inputFormatters;
+  final List<TextInputFormatter>? inputFormatters;
   final int maxLines;
   final ValueChanged<String?>? onChanged;
   final String? initialValue;
@@ -51,6 +52,7 @@ class StyledFormField extends StatelessWidget {
         obscureText: obscureText,
         keyboardType: keyboardType,
         validator: validator,
+        inputFormatters: inputFormatters,
         maxLines: maxLines,
         onChanged: onChanged,
         enabled: enabled,
@@ -59,16 +61,20 @@ class StyledFormField extends StatelessWidget {
           labelText: label,
           hintText: hint,
           labelStyle: AppTheme.text(context).bodyMedium,
-          hintStyle: AppTheme.text(context).bodyMedium.copyWith(
-            color: AppTheme.colors(context).textTertiary,
-          ),
+          hintStyle: AppTheme.text(
+            context,
+          ).bodyMedium.copyWith(color: AppTheme.colors(context).textTertiary),
           prefixIcon: prefixIcon != null
-              ? Icon(prefixIcon, color: AppTheme.colors(context).textSecondary, size: 20)
+              ? Icon(
+                  prefixIcon,
+                  color: AppTheme.colors(context).textSecondary,
+                  size: 20,
+                )
               : null,
           prefixText: prefixText,
-          prefixStyle: AppTheme.text(context).bodyLarge.copyWith(
-            color: AppTheme.colors(context).textSecondary,
-          ),
+          prefixStyle: AppTheme.text(
+            context,
+          ).bodyLarge.copyWith(color: AppTheme.colors(context).textSecondary),
           suffixText: suffixText,
           suffixStyle: AppTheme.text(context).labelBold,
           filled: true,
@@ -106,9 +112,9 @@ class StyledFormField extends StatelessWidget {
               width: 1.5,
             ),
           ),
-          errorStyle: AppTheme.text(context).bodySmall.copyWith(
-            color: AppTheme.colors(context).danger,
-          ),
+          errorStyle: AppTheme.text(
+            context,
+          ).bodySmall.copyWith(color: AppTheme.colors(context).danger),
         ),
       ),
     );

@@ -143,5 +143,40 @@ class NewLoanService {
 
     return _repository.createLoan(data);
   }
+
+  /// Validates the form data and creates the loan along with the invitation in a single transaction.
+  Future<String> inviteAndCreateLoan({
+    required String fullName,
+    required String cnic,
+    String? phone,
+    String? nickname,
+    required NewLoanFormData data,
+  }) async {
+    // Business-rule validation
+    if (data.principalAmount < minPrincipal) {
+      throw ArgumentError(
+        'Minimum loan amount is ${formatCurrency(minPrincipal)}',
+      );
+    }
+    if (data.principalAmount > maxPrincipal) {
+      throw ArgumentError(
+        'Maximum loan amount is ${formatCurrency(maxPrincipal)}',
+      );
+    }
+    if (data.interestRate < minInterestRate ||
+        data.interestRate > maxInterestRate) {
+      throw ArgumentError(
+        'Interest rate must be between $minInterestRate% and $maxInterestRate%',
+      );
+    }
+
+    return _repository.inviteAndCreateLoan(
+      fullName: fullName,
+      cnic: cnic,
+      phone: phone,
+      nickname: nickname,
+      data: data,
+    );
+  }
 }
 

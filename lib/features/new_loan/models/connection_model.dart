@@ -10,6 +10,9 @@ class ConnectionModel {
     required this.status,
     required this.claimStatus,
     this.borrowerEmail,
+    this.lenderName,
+    this.lenderPhone,
+    this.lenderEmail,
     this.lenderVerifiedAt,
     this.loans = const [],
   });
@@ -22,12 +25,16 @@ class ConnectionModel {
   final String status;
   final String claimStatus;
   final String? borrowerEmail;
+  final String? lenderName;
+  final String? lenderPhone;
+  final String? lenderEmail;
   final DateTime? lenderVerifiedAt;
   final List<LoanModel> loans;
 
   factory ConnectionModel.fromJson(Map<String, dynamic> json) {
     // The profile fields come from a join on `profiles`
     final profile = json['profiles'] as Map<String, dynamic>?;
+    final lenderProfile = json['lender'] as Map<String, dynamic>?;
 
     final loansData = json['loans'] as List<dynamic>?;
     final loans = loansData != null
@@ -42,6 +49,9 @@ class ConnectionModel {
       borrowerCnic: profile?['cnic'] as String? ?? 'Unknown',
       borrowerPhone: profile?['phone'] as String?,
       borrowerEmail: profile?['email'] as String?,
+      lenderName: lenderProfile?['full_name'] as String?,
+      lenderPhone: lenderProfile?['phone'] as String?,
+      lenderEmail: lenderProfile?['email'] as String?,
       claimStatus: profile?['claim_status'] as String? ?? 'invited',
       lenderVerifiedAt: json['lender_verified_at'] != null
           ? DateTime.tryParse(json['lender_verified_at'] as String)

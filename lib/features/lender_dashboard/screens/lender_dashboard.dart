@@ -12,6 +12,7 @@ import '../widgets/quick_actions_bar.dart';
 import '../widgets/recent_activity_card.dart';
 import '../widgets/pending_confirmations_card.dart';
 import '../widgets/sent_invitations_card.dart';
+import '../widgets/pending_disbursements_card.dart';
 import '../../borrower_dashboard/screens/borrower_dashboard.dart';
 
 /// Main home screen — switches between Lender and Borrower dashboard
@@ -75,6 +76,8 @@ class _LenderDashboardState extends ConsumerState<LenderDashboard> {
             LoanPerformanceChart(),
             SizedBox(height: AppTheme.spacingXl),
             SentInvitationsCard(),
+            SizedBox(height: AppTheme.spacingXl),
+            PendingDisbursementsCard(),
             SizedBox(height: AppTheme.spacingXl),
             ActiveLoansCard(),
             SizedBox(height: AppTheme.spacingXl),

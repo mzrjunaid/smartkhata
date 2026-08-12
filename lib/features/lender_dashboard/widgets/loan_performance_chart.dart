@@ -22,9 +22,7 @@ class LoanPerformanceChart extends ConsumerWidget {
       children: [
         SectionHeader(title: 'Loan Performance'),
         Container(
-          margin: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingLg,
-          ),
+          margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
           padding: EdgeInsets.all(AppTheme.spacingLg),
           decoration: AppTheme.cardDecoration(context),
           child: statsAsync.when(
@@ -32,7 +30,10 @@ class LoanPerformanceChart extends ConsumerWidget {
             error: (e, _) => SizedBox(
               height: 200,
               child: Center(
-                child: Text('Error: $e', style: AppTheme.text(context).bodyMedium),
+                child: Text(
+                  'Error: $e',
+                  style: AppTheme.text(context).bodyMedium,
+                ),
               ),
             ),
             data: (stats) {
@@ -42,9 +43,17 @@ class LoanPerformanceChart extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _legendDot(context, AppTheme.colors(context).primary, 'Disbursed'),
+                      _legendDot(
+                        context,
+                        AppTheme.colors(context).primary,
+                        'Disbursed',
+                      ),
                       SizedBox(width: AppTheme.spacingLg),
-                      _legendDot(context, AppTheme.colors(context).accent, 'Collected'),
+                      _legendDot(
+                        context,
+                        AppTheme.colors(context).accent,
+                        'Collected',
+                      ),
                     ],
                   ),
 
@@ -61,7 +70,9 @@ class LoanPerformanceChart extends ConsumerWidget {
                           touchTooltipData: LineTouchTooltipData(
                             getTooltipItems: (touchedSpots) {
                               return touchedSpots.map((spot) {
-                                final label = spot.barIndex == 0 ? 'Collected' : 'Disbursed';
+                                final label = spot.barIndex == 0
+                                    ? 'Collected'
+                                    : 'Disbursed';
                                 return LineTooltipItem(
                                   '$label\n₨ ${_compact(spot.y)}',
                                   AppTheme.text(context).bodySmall.copyWith(
@@ -87,9 +98,12 @@ class LoanPerformanceChart extends ConsumerWidget {
                                   padding: const EdgeInsets.only(top: 8),
                                   child: Text(
                                     stats[idx].month,
-                                    style: AppTheme.text(context).bodySmall.copyWith(
-                                      color: isDark ? Colors.white60 : Colors.black54,
-                                    ),
+                                    style: AppTheme.text(context).bodySmall
+                                        .copyWith(
+                                          color: isDark
+                                              ? Colors.white60
+                                              : Colors.black54,
+                                        ),
                                   ),
                                 );
                               },
@@ -112,7 +126,9 @@ class LoanPerformanceChart extends ConsumerWidget {
                           drawVerticalLine: false,
                           horizontalInterval: _maxY(stats) / 4,
                           getDrawingHorizontalLine: (value) => FlLine(
-                            color: isDark ? Colors.white10 : Colors.grey.shade200,
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.grey.shade200,
                             strokeWidth: 1,
                             dashArray: [5, 5],
                           ),
@@ -131,7 +147,9 @@ class LoanPerformanceChart extends ConsumerWidget {
                             dotData: FlDotData(show: false),
                             belowBarData: BarAreaData(
                               show: true,
-                              color: AppTheme.colors(context).accent.withValues(alpha: 0.1),
+                              color: AppTheme.colors(
+                                context,
+                              ).accent.withValues(alpha: 0.1),
                             ),
                           ),
                           // Disbursed Line
@@ -149,8 +167,12 @@ class LoanPerformanceChart extends ConsumerWidget {
                               show: true,
                               gradient: LinearGradient(
                                 colors: [
-                                  AppTheme.colors(context).primary.withValues(alpha: 0.3),
-                                  AppTheme.colors(context).primary.withValues(alpha: 0.0),
+                                  AppTheme.colors(
+                                    context,
+                                  ).primary.withValues(alpha: 0.3),
+                                  AppTheme.colors(
+                                    context,
+                                  ).primary.withValues(alpha: 0.0),
                                 ],
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
@@ -177,10 +199,7 @@ class LoanPerformanceChart extends ConsumerWidget {
         Container(
           width: 10,
           height: 10,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
         Text(label, style: AppTheme.text(context).bodyMedium),

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 import '../../lender_dashboard/providers/dashboard_providers.dart';
+import '../../loan_users/data/loan_users_repository.dart';
 import 'package:smartkhata/core/theme/app_theme.dart';
 import '../models/new_loan_form_data.dart';
 import '../providers/new_loan_providers.dart';
@@ -28,6 +29,7 @@ class NewLoanScreen extends ConsumerStatefulWidget {
 class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
   final _cnicFormatter = MaskTextInputFormatter(mask: '#####-#######-#');
+  final _phoneFormatter = MaskTextInputFormatter(mask: '####-#######');
 
   bool _loading = false;
   String? _error;
@@ -53,45 +55,59 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
     final service = ref.read(newLoanServiceProvider);
 
     try {
-      String connectionId;
-
       if (_flow == _BorrowerFlow.newBorrower) {
-        // 1. Create borrower & connection
-        connectionId = await service.inviteBorrower(
+        // 1. Create borrower, connection, and loan all at once!
+        final formData = NewLoanFormData(
+          connectionId: '', // Handled inside RPC
+          principalAmount: double.parse(v['principal_amount'] as String),
+          currencyCode: 'PKR',
+          interestRate: double.parse(v['interest_rate']?.toString() ?? '0'),
+          interestType: v['interest_type'] as String,
+          disbursedAt: v['disbursed_at'] as DateTime?,
+          dueDate: v['due_date'] as DateTime?,
+          notes: (v['notes'] as String?)?.isNotEmpty == true
+              ? v['notes'] as String
+              : null,
+        );
+
+        await service.inviteAndCreateLoan(
           fullName: v['borrower_name'] as String,
           cnic: (v['borrower_cnic'] as String).replaceAll('-', ''),
           phone: (v['borrower_phone'] as String?)?.isNotEmpty == true
-              ? v['borrower_phone'] as String
+              ? (v['borrower_phone'] as String).replaceAll('-', '')
               : null,
           nickname: (v['borrower_nickname'] as String?)?.isNotEmpty == true
               ? v['borrower_nickname'] as String
               : null,
+          data: formData,
         );
       } else {
         // 2. Use existing connection
-        connectionId = v['connection_id'] as String;
+        final connectionId = v['connection_id'] as String;
+
+        final formData = NewLoanFormData(
+          connectionId: connectionId,
+          principalAmount: double.parse(v['principal_amount'] as String),
+          currencyCode: 'PKR',
+          interestRate: double.parse(v['interest_rate']?.toString() ?? '0'),
+          interestType: v['interest_type'] as String,
+          disbursedAt: v['disbursed_at'] as DateTime?,
+          dueDate: v['due_date'] as DateTime?,
+          notes: (v['notes'] as String?)?.isNotEmpty == true
+              ? v['notes'] as String
+              : null,
+        );
+
+        await service.submitLoan(formData);
       }
-
-      // 3. Create Loan
-      final formData = NewLoanFormData(
-        connectionId: connectionId,
-        principalAmount: double.parse(v['principal_amount'] as String),
-        currencyCode: 'PKR',
-        interestRate: double.parse(v['interest_rate']?.toString() ?? '0'),
-        interestType: v['interest_type'] as String,
-        disbursedAt: v['disbursed_at'] as DateTime?,
-        dueDate: v['due_date'] as DateTime?,
-        notes: (v['notes'] as String?)?.isNotEmpty == true
-            ? v['notes'] as String
-            : null,
-      );
-
-      await service.submitLoan(formData);
 
       // Invalidate dashboard and connections
       ref.invalidate(dashboardSummaryProvider);
       ref.invalidate(recentActivityProvider);
       ref.invalidate(lenderConnectionsProvider);
+      ref.invalidate(activeConnectionsProvider);
+      ref.invalidate(monthlyStatsProvider);
+      ref.invalidate(pendingConfirmationsProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -258,6 +274,7 @@ class _NewLoanScreenState extends ConsumerState<NewLoanScreen> {
                             hint: '03XX-XXXXXXX',
                             prefixIcon: Icons.phone_outlined,
                             keyboardType: TextInputType.phone,
+                            inputFormatters: [_phoneFormatter],
                           ),
                           StyledFormField(
                             name: 'borrower_nickname',

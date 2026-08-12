@@ -43,7 +43,10 @@ class ActiveLoansCard extends ConsumerWidget {
               child: Text('Error: $e', style: AppTheme.text(context).bodyMedium),
             ),
             data: (connections) {
-              final activeUsers = connections.where((c) => c.claimStatus == 'claimed').toList();
+              final activeUsers = connections.where((c) {
+                if (c.claimStatus != 'claimed') return false;
+                return c.loans.any((l) => ['active', 'overdue', 'defaulted'].contains(l.status));
+              }).toList();
               if (activeUsers.isEmpty) {
                 return Padding(
                   padding: EdgeInsets.all(AppTheme.spacingLg),
@@ -58,9 +61,11 @@ class ActiveLoansCard extends ConsumerWidget {
                     LoanItemTile(
                       borrowerName: displayUsers[i].borrowerName,
                       amount: service.formatCurrency(
-                        displayUsers[i].loans.fold(0.0, (sum, loan) => sum + loan.principal)
+                        displayUsers[i].loans
+                            .where((l) => ['active', 'overdue', 'defaulted'].contains(l.status))
+                            .fold(0.0, (sum, loan) => sum + loan.principal)
                       ),
-                      status: displayUsers[i].status,
+                      status: displayUsers[i].loans.any((l) => l.status == 'overdue') ? 'overdue' : 'active',
                       onTap: () {
                         context.push('/borrower-profile/${displayUsers[i].id}');
                       },

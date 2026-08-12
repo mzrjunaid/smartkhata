@@ -20,6 +20,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormBuilderState>();
   final _cnicFormatter = MaskTextInputFormatter(mask: '#####-#######-#');
+  final _phoneFormatter = MaskTextInputFormatter(mask: '####-#######');
 
   SignupCategory _category = SignupCategory.lender;
 
@@ -126,7 +127,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                         ? _verifiedCnic!
                         : v['cnic'])
                     .replaceAll('-', ''),
-            phone: v['phone'],
+            phone: (v['phone'] as String?)?.isNotEmpty == true
+                ? (v['phone'] as String).replaceAll('-', '')
+                : null,
           );
       if (mounted) context.go('/');
     } on AuthException catch (e) {
@@ -397,7 +400,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                     decoration: _buildInputDecoration(
                                       'Phone (optional)',
                                       Icons.phone_outlined,
-                                    ),
+                                    ).copyWith(hintText: '03XX-XXXXXXX'),
+                                    keyboardType: TextInputType.phone,
+                                    inputFormatters: [_phoneFormatter],
                                   ),
                                   SizedBox(height: 20),
                                   FormBuilderTextField(

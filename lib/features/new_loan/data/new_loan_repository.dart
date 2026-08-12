@@ -54,9 +54,33 @@ class NewLoanRepository {
       'p_currency': data.currencyCode,
       'p_interest_rate': data.interestRate,
       'p_interest_type': data.interestType,
-      if (data.disbursedAt != null) 'p_disbursed_at': data.disbursedAt!.toIso8601String(),
-      if (data.dueDate != null) 'p_due_date': data.dueDate!.toIso8601String(),
-      if (data.notes != null) 'p_note': data.notes,
+      'p_disbursed_at': data.disbursedAt?.toIso8601String(),
+      'p_due_date': data.dueDate?.toIso8601String(),
+      'p_note': data.notes,
+    });
+    return response as String;
+  }
+
+  /// Wraps invitation and loan creation in a single transaction RPC.
+  Future<String> inviteAndCreateLoan({
+    required String fullName,
+    required String cnic,
+    String? phone,
+    String? nickname,
+    required NewLoanFormData data,
+  }) async {
+    final response = await _client.rpc('invite_and_create_loan', params: {
+      'p_full_name': fullName,
+      'p_cnic': cnic,
+      'p_phone': phone,
+      'p_nickname': nickname,
+      'p_principal': data.principalAmount,
+      'p_currency': data.currencyCode,
+      'p_interest_rate': data.interestRate,
+      'p_interest_type': data.interestType,
+      'p_disbursed_at': data.disbursedAt?.toIso8601String(),
+      'p_due_date': data.dueDate?.toIso8601String(),
+      'p_note': data.notes,
     });
     return response as String;
   }

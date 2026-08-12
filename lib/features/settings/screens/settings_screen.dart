@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/providers/theme_provider.dart';
+import '../../../core/providers/role_provider.dart';
 import '../../../core/widgets/dashboard_app_bar.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -64,16 +65,18 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
 
-          const SizedBox(height: 24),
-          _buildSectionHeader(context, 'Security & Logs'),
-          _buildListTile(
-            context,
-            icon: Icons.history_edu_rounded,
-            title: 'Audit Logs',
-            onTap: () {
-              context.push('/audit-logs');
-            },
-          ),
+          if (ref.watch(roleProvider) == AppRole.lender) ...[
+            const SizedBox(height: 24),
+            _buildSectionHeader(context, 'Security & Logs'),
+            _buildListTile(
+              context,
+              icon: Icons.history_edu_rounded,
+              title: 'Audit Logs',
+              onTap: () {
+                context.push('/audit-logs');
+              },
+            ),
+          ],
           const SizedBox(height: 24),
           _buildSectionHeader(context, 'Preferences'),
           _buildListTile(

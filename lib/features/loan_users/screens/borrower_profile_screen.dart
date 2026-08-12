@@ -9,6 +9,7 @@ import '../models/credit_score_model.dart';
 import '../models/repayment_model.dart';
 
 import '../../../core/widgets/dashboard_app_bar.dart';
+import '../../../core/providers/role_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -23,13 +24,15 @@ class BorrowerProfileScreen extends ConsumerWidget {
     final repaymentsAsync = ref.watch(
       connectionRepaymentsProvider(connectionId),
     );
+    final role = ref.watch(roleProvider);
+    final isLenderView = role == AppRole.lender;
 
     return Scaffold(
       backgroundColor: AppTheme.colors(context).surface,
       body: Column(
         children: [
           DashboardAppBar(
-            title: 'Borrower Profile',
+            title: isLenderView ? 'Borrower Profile' : 'Lender Profile',
             showBackButton: true,
           ),
           Expanded(
@@ -50,12 +53,13 @@ class BorrowerProfileScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _buildHeader(context, connection, creditScoreAsync),
+                      _buildHeader(context, connection, creditScoreAsync, isLenderView),
                       const SizedBox(height: AppTheme.spacingXl),
 
                       _buildInvitedLoansSection(
                         context,
-                        'Invited Loans (Pending)',
+                        ref,
+                        'Pending Loans',
                         connection.loans
                             .where(
                               (l) => l.status == 'draft' || l.status == 'pending_disbursement',
@@ -90,7 +94,7 @@ class BorrowerProfileScreen extends ConsumerWidget {
                       _buildRepaymentsSection(context, repaymentsAsync),
                       const SizedBox(height: AppTheme.spacingXl),
 
-                      _buildManagementSection(context, ref, connection),
+                      if (isLenderView) _buildManagementSection(context, ref, connection),
                       const SizedBox(height: 120), // padding for scroll
                     ],
                   ),
@@ -106,99 +110,179 @@ class BorrowerProfileScreen extends ConsumerWidget {
   Widget _buildHeader(BuildContext context, 
     ConnectionModel connection,
     AsyncValue<CreditScoreModel?> creditScoreAsync,
+    bool isLenderView,
   ) {
+    final String displayName = isLenderView 
+        ? connection.borrowerName 
+        : (connection.lenderName ?? 'Lender Data (Coming Soon)');
+        
+    final String? cnic = isLenderView ? connection.borrowerCnic : null;
+    final String? phone = isLenderView ? connection.borrowerPhone : connection.lenderPhone;
+    final String? email = isLenderView ? connection.borrowerEmail : connection.lenderEmail;
+
+    final String initials = displayName.isNotEmpty
+        ? displayName.trim().split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join().toUpperCase()
+        : 'U';
+
+    final theme = AppTheme.colors(context);
+
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingLg),
-      decoration: AppTheme.cardDecoration(context),
+      padding: const EdgeInsets.all(AppTheme.spacingXl),
+      decoration: BoxDecoration(
+        color: theme.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: theme.primary.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: theme.primary.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: AppTheme.colors(context).primary.withValues(alpha: 0.1),
-                child: Text(
-                  connection.borrowerName.substring(0, 1).toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.colors(context).primary,
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      theme.primary.withValues(alpha: 0.2),
+                      theme.primary.withValues(alpha: 0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: theme.primary.withValues(alpha: 0.3),
+                    width: 2,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    initials,
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: theme.primary,
+                    ),
                   ),
                 ),
               ),
-              SizedBox(width: AppTheme.spacingLg),
+              const SizedBox(width: AppTheme.spacingLg),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      connection.borrowerName,
+                      displayName,
                       style: TextStyle(
                         fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.colors(context).textPrimary,
+                        fontWeight: FontWeight.w700,
+                        color: theme.textPrimary,
+                        letterSpacing: -0.5,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'CNIC: ${connection.borrowerCnic}',
-                      style: AppTheme.text(context).bodyMedium,
-                    ),
-                    if (connection.borrowerPhone != null)
+                    const SizedBox(height: 6),
+                    if (cnic != null && cnic.isNotEmpty)
+                      _buildContactRow(context, Icons.badge_outlined, cnic),
+                    if (phone != null && phone.isNotEmpty)
+                      _buildContactRow(context, Icons.phone_outlined, phone),
+                    if (email != null && email.isNotEmpty)
+                      _buildContactRow(context, Icons.email_outlined, email),
+                    if (!isLenderView && (phone == null || phone.isEmpty) && (email == null || email.isEmpty))
                       Text(
-                        'Phone: ${connection.borrowerPhone}',
-                        style: AppTheme.text(context).bodyMedium,
-                      ),
-                    if (connection.borrowerEmail != null)
-                      Text(
-                        'Email: ${connection.borrowerEmail}',
-                        style: AppTheme.text(context).bodyMedium,
+                        'No contact info available',
+                        style: AppTheme.text(context).bodySmall.copyWith(
+                          color: theme.textSecondary,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppTheme.spacingLg),
-          const Divider(),
-          const SizedBox(height: AppTheme.spacingMd),
-          creditScoreAsync.when(
-            loading: () => const CircularProgressIndicator(),
-            error: (_, _) => const Text('Failed to load score'),
-            data: (scoreModel) {
-              if (scoreModel == null) {
-                return const Text('No credit score available');
-              }
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildScoreItem(context, 
-                    'Score',
-                    scoreModel.score.toString(),
-                    scoreModel.score >= 700
-                        ? AppTheme.colors(context).success
-                        : (scoreModel.score >= 500
-                              ? AppTheme.colors(context).warning
-                              : AppTheme.colors(context).danger),
-                  ),
-                  _buildScoreItem(context, 
-                    'Total Loans',
-                    scoreModel.totalLoans.toString(),
-                    AppTheme.colors(context).primary,
-                  ),
-                  _buildScoreItem(context, 
-                    'On Time',
-                    scoreModel.onTimeCount.toString(),
-                    AppTheme.colors(context).success,
-                  ),
-                  _buildScoreItem(context, 
-                    'Late/Default',
-                    '${scoreModel.lateCount}/${scoreModel.defaultCount}',
-                    AppTheme.colors(context).danger,
-                  ),
-                ],
-              );
-            },
+          if (isLenderView) ...[
+            const SizedBox(height: AppTheme.spacingXl),
+            const Divider(),
+            const SizedBox(height: AppTheme.spacingLg),
+            creditScoreAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, _) => Center(
+                child: Text(
+                  'Failed to load score',
+                  style: TextStyle(color: theme.danger),
+                ),
+              ),
+              data: (scoreModel) {
+                if (scoreModel == null) {
+                  return Center(
+                    child: Text(
+                      'No credit score available',
+                      style: TextStyle(color: theme.textSecondary),
+                    ),
+                  );
+                }
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildScoreItem(context, 
+                      'Score',
+                      scoreModel.score.toString(),
+                      scoreModel.score >= 700
+                          ? theme.success
+                          : (scoreModel.score >= 500
+                                ? theme.warning
+                                : theme.danger),
+                    ),
+                    _buildScoreItem(context, 
+                      'Total Loans',
+                      scoreModel.totalLoans.toString(),
+                      theme.primary,
+                    ),
+                    _buildScoreItem(context, 
+                      'On Time',
+                      scoreModel.onTimeCount.toString(),
+                      theme.success,
+                    ),
+                    _buildScoreItem(context, 
+                      'Late/Default',
+                      '${scoreModel.lateCount}/${scoreModel.defaultCount}',
+                      theme.danger,
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactRow(BuildContext context, IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: AppTheme.colors(context).textSecondary,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTheme.text(context).bodyMedium.copyWith(
+                color: AppTheme.colors(context).textSecondary,
+              ),
+            ),
           ),
         ],
       ),
@@ -227,7 +311,7 @@ class BorrowerProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInvitedLoansSection(BuildContext context, String title, List<LoanModel> loans) {
+  Widget _buildInvitedLoansSection(BuildContext context, WidgetRef ref, String title, List<LoanModel> loans) {
     if (loans.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -283,7 +367,7 @@ class BorrowerProfileScreen extends ConsumerWidget {
                         ),
                         SizedBox(width: AppTheme.spacingMd),
                         Text(
-                          'Pending Invitation',
+                          loan.status == 'pending_disbursement' ? 'Pending Disbursement' : 'Pending Invitation',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: AppTheme.colors(context).textSecondary,
@@ -360,6 +444,48 @@ class BorrowerProfileScreen extends ConsumerWidget {
                     minHeight: 6,
                   ),
                 ),
+                if (loan.status == 'pending_disbursement') ...[
+                  SizedBox(height: AppTheme.spacingLg),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            try {
+                              await ref.read(loanUsersRepositoryProvider).updateLoanStatus(loan.id, 'cancelled');
+                              ref.invalidate(connectionDetailsProvider(connectionId));
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                            }
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.colors(context).danger,
+                            side: BorderSide(color: AppTheme.colors(context).danger),
+                          ),
+                          child: const Text('Reject'),
+                        ),
+                      ),
+                      const SizedBox(width: AppTheme.spacingMd),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            try {
+                              await ref.read(loanUsersRepositoryProvider).updateLoanStatus(loan.id, 'active');
+                              ref.invalidate(connectionDetailsProvider(connectionId));
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.colors(context).success,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Activate'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           );

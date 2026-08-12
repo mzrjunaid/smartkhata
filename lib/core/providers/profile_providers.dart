@@ -47,7 +47,7 @@ final currentProfileProvider = FutureProvider<Map<String, dynamic>>((ref) async 
 
   final response = await supabase
       .from('profiles')
-      .select('id, full_name')
+      .select('id, full_name, cnic, phone')
       .eq('auth_user_id', user.id)
       .single();
 
