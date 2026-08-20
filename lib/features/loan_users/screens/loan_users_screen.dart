@@ -88,49 +88,58 @@ class _BorrowerConnectionsList extends StatelessWidget {
           itemBuilder: (context, index) {
             final c = connections[index];
             return Container(
-              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppTheme.colors(context).cardBackground,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: AppTheme.cardShadow,
               ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: AppTheme.colors(context).primary.withValues(alpha: 0.1),
-                    radius: 24,
-                    child: Text(
-                      c.lenderName.substring(0, 1).toUpperCase(),
-                      style: TextStyle(
-                        color: AppTheme.colors(context).primary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => context.push('/borrower-profile/${c.connectionId}'),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
                       children: [
-                        Text(c.lenderName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.colors(context).textPrimary)),
-                        if (c.lenderPhone != null)
-                          Text(c.lenderPhone!, style: TextStyle(fontSize: 14, color: AppTheme.colors(context).textSecondary)),
+                        CircleAvatar(
+                          backgroundColor: AppTheme.colors(context).primary.withValues(alpha: 0.1),
+                          radius: 24,
+                          child: Text(
+                            c.lenderName.isNotEmpty ? c.lenderName.substring(0, 1).toUpperCase() : 'L',
+                            style: TextStyle(
+                              color: AppTheme.colors(context).primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(c.lenderName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.colors(context).textPrimary)),
+                              if (c.lenderPhone != null)
+                                Text(c.lenderPhone!, style: TextStyle(fontSize: 14, color: AppTheme.colors(context).textSecondary)),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.colors(context).primarySurface,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${c.loans.length} Loans',
+                            style: TextStyle(color: AppTheme.colors(context).primary, fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppTheme.colors(context).primarySurface,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${c.loans.length} Loans',
-                      style: TextStyle(color: AppTheme.colors(context).primary, fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
+                ),
               ),
             );
           },

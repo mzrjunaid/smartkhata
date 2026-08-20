@@ -64,7 +64,7 @@ final filteredTransactionsProvider = Provider<AsyncValue<List<TransactionModel>>
         break;
       case TransactionFilterType.pending:
         filtered = filtered.where((t) {
-          return t.status == 'pending';
+          return t.status == 'pending' || t.status == 'pending_confirmation';
         }).toList();
         break;
       case TransactionFilterType.all:
@@ -93,7 +93,7 @@ final transactionSummaryProvider = Provider<Map<String, double>>((ref) {
       double inTotal = 0;
       double outTotal = 0;
       for (final t in txs) {
-        if (t.status == 'rejected' || t.status == 'pending' || t.status == 'missed') continue; // only count confirmed/active
+        if (t.status == 'rejected' || t.status == 'pending' || t.status == 'pending_confirmation' || t.status == 'missed') continue; // only count confirmed/active
         if (t.direction == TransactionDirection.moneyIn) inTotal += t.amount;
         if (t.direction == TransactionDirection.moneyOut) outTotal += t.amount;
       }

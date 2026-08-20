@@ -15,11 +15,13 @@ class DashboardAppBar extends ConsumerWidget {
     this.title,
     this.subtitle,
     this.showBackButton = false,
+    this.trailing,
   });
 
   final String? title;
   final String? subtitle;
   final bool showBackButton;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -143,38 +145,43 @@ class DashboardAppBar extends ConsumerWidget {
                 ),
               ),
 
-              // ── Notification bell ─────────────────────────────────────
-              IconButton(
-                onPressed: () {
-                  // TODO: Navigate to notifications screen.
-                },
-                icon: Badge(
-                  smallSize: 8,
-                  backgroundColor: AppTheme.colors(context).danger,
-                  child: Icon(Icons.notifications_outlined),
+              if (trailing != null)
+                trailing!
+              else ...[
+                // ── Notification bell ─────────────────────────────────────
+                IconButton(
+                  onPressed: () {
+                    context.push('/notifications');
+                  },
+                  icon: Badge(
+                    smallSize: 8,
+                    backgroundColor: AppTheme.colors(context).danger,
+                    child: Icon(Icons.notifications_outlined),
+                  ),
+                  color: Colors.white,
+                  tooltip: 'Notifications',
                 ),
-                color: Colors.white,
-                tooltip: 'Notifications',
-              ),
 
-              // ── Logout ────────────────────────────────────────────────
-              IconButton(
-                onPressed: () async {
-                  try {
-                    await ref.read(authRepositoryProvider).signOut();
-                    if (context.mounted) context.go('/login');
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Logout failed: $e')),
-                      );
-                    }
-                  }
-                },
-                icon: const Icon(Icons.logout_rounded),
-                color: Colors.white70,
-                tooltip: 'Logout',
-              ),
+                // ── Logout ────────────────────────────────────────────────
+                if (!showBackButton)
+                  IconButton(
+                    onPressed: () async {
+                      try {
+                        await ref.read(authRepositoryProvider).signOut();
+                        if (context.mounted) context.go('/login');
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Logout failed: $e')),
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.logout_rounded),
+                    color: Colors.white70,
+                    tooltip: 'Logout',
+                  ),
+              ],
             ],
           ),
 

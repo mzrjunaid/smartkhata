@@ -278,7 +278,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                                         alpha: 0.1,
                                       );
                                     }
-                                    return Colors.white;
+                                    return AppTheme.colors(context).surface;
                                   }),
                               foregroundColor:
                                   WidgetStateProperty.resolveWith<Color>((
@@ -298,11 +298,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                         Container(
                           padding: EdgeInsets.all(28),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppTheme.colors(context).cardBackground,
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
+                                color: AppTheme.colors(context).textPrimary.withValues(alpha: 0.04),
                                 blurRadius: 24,
                                 offset: Offset(0, 8),
                               ),

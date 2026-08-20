@@ -288,20 +288,43 @@ class LoanUsersRepository {
     });
   }
 
+  Future<void> submitAdHocRepayment(
+      String loanId, double amount, String method, String? note, DateTime paidDate) async {
+    final profileId = await _currentProfileId();
+    await _client.from('repayments').insert({
+      'loan_id': loanId,
+      'amount': amount,
+      'status': 'pending_confirmation',
+      'method': method,
+      'note': note,
+      'paid_date': paidDate.toIso8601String(),
+      'recorded_by': profileId,
+    });
+  }
+
   Future<void> generateMonthlySchedule(String loanId, double totalAmount, DateTime startDate, int months) async {
     if (months <= 0) return;
 
     final profileId = await _currentProfileId();
-    final double monthlyAmount = totalAmount / months;
+    final double standardMonthlyAmount = (totalAmount / months).roundToDouble();
+    double remainingAmount = totalAmount;
     final List<Map<String, dynamic>> batch = [];
 
     for (int i = 1; i <= months; i++) {
       // Calculate next due date by adding 'i' months to start date
       final nextDueDate = DateTime(startDate.year, startDate.month + i, startDate.day);
       
+      double amountToUse;
+      if (i == months) {
+        amountToUse = remainingAmount;
+      } else {
+        amountToUse = standardMonthlyAmount;
+        remainingAmount -= amountToUse;
+      }
+
       batch.add({
         'loan_id': loanId,
-        'amount': double.parse(monthlyAmount.toStringAsFixed(2)),
+        'amount': amountToUse,
         'status': 'pending',
         'due_date': nextDueDate.toIso8601String(),
         'recorded_by': profileId,

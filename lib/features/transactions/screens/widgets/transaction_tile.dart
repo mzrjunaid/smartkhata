@@ -110,6 +110,7 @@ class TransactionTile extends StatelessWidget {
     Color color;
     switch (transaction.status) {
       case 'pending':
+      case 'pending_confirmation':
         color = AppTheme.colors(context).warning;
         break;
       case 'rejected':
@@ -130,7 +131,7 @@ class TransactionTile extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
-        transaction.status.toUpperCase(),
+        transaction.status.toUpperCase().replaceAll('_', ' '),
         style: TextStyle(
           fontSize: 8,
           fontWeight: FontWeight.bold,

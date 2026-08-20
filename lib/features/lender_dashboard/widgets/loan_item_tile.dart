@@ -20,7 +20,7 @@ class LoanItemTile extends StatelessWidget {
   final VoidCallback? onTap;
 
   Color _statusColor(BuildContext context) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'overdue':
         return AppTheme.colors(context).danger;
       case 'paid':
@@ -31,13 +31,24 @@ class LoanItemTile extends StatelessWidget {
   }
 
   Color _statusBg(BuildContext context) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'overdue':
         return AppTheme.colors(context).dangerSurface;
       case 'paid':
         return AppTheme.colors(context).successSurface;
       default:
         return AppTheme.colors(context).accentSurface;
+    }
+  }
+
+  IconData _statusIcon() {
+    switch (status.toLowerCase()) {
+      case 'overdue':
+        return Icons.warning_rounded;
+      case 'paid':
+        return Icons.check_circle_rounded;
+      default:
+        return Icons.cached_rounded;
     }
   }
 
@@ -49,69 +60,129 @@ class LoanItemTile extends StatelessWidget {
         .map((w) => w.isNotEmpty ? w[0] : '')
         .join()
         .toUpperCase();
+        
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: AppTheme.radiusSm,
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppTheme.spacingLg,
-          vertical: AppTheme.spacingMd,
-        ),
-        child: Row(
-          children: [
-            // ── Avatar ──────────────────────────────────────────────
-            Container(
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppTheme.colors(context).primarySurface,
-                borderRadius: AppTheme.radiusSm,
-              ),
-              child: Text(
-                initials,
-                style: AppTheme.text(
-                  context,
-                ).labelBold.copyWith(color: AppTheme.colors(context).primary),
-              ),
-            ),
-
-            SizedBox(width: AppTheme.spacingMd),
-
-            // ── Name & amount ───────────────────────────────────────
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    borrowerName,
-                    style: AppTheme.text(context).headingSmall,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        splashColor: AppTheme.colors(context).primary.withValues(alpha: 0.05),
+        highlightColor: AppTheme.colors(context).primary.withValues(alpha: 0.02),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingLg,
+            vertical: 16.0,
+          ),
+          child: Row(
+            children: [
+              // ── Avatar ──────────────────────────────────────────────
+              Container(
+                width: 48,
+                height: 48,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark 
+                        ? [const Color(0xFF2C3E50), const Color(0xFF3498DB)]
+                        : [const Color(0xFFE0EAFC), const Color(0xFFCFDEF3)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  SizedBox(height: 2),
-                  Text(amount, style: AppTheme.text(context).bodyMedium),
-                ],
-              ),
-            ),
-
-            // ── Status badge ────────────────────────────────────────
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: _statusBg(context),
-                borderRadius: AppTheme.radiusSm,
-              ),
-              child: Text(
-                status[0].toUpperCase() + status.substring(1),
-                style: AppTheme.text(context).bodySmall.copyWith(
-                  color: _statusColor(context),
-                  fontWeight: FontWeight.w600,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark ? Colors.black26 : Colors.blue.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  initials,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : const Color(0xFF2C3E50),
+                  ),
                 ),
               ),
-            ),
-          ],
+
+              const SizedBox(width: 16),
+
+              // ── Name & amount ───────────────────────────────────────
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      borrowerName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      amount, 
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.colors(context).textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Status badge ────────────────────────────────────────
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _statusBg(context),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _statusColor(context).withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _statusIcon(),
+                          size: 14,
+                          color: _statusColor(context),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          status[0].toUpperCase() + status.substring(1),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _statusColor(context),
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: AppTheme.colors(context).textTertiary,
+                size: 20,
+              ),
+            ],
+          ),
         ),
       ),
     );

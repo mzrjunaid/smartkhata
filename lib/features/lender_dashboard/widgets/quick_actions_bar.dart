@@ -10,7 +10,7 @@ class QuickActionsBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,9 +43,7 @@ class QuickActionsBar extends StatelessWidget {
             label: 'Remind',
             color: AppTheme.colors(context).warning,
             backgroundColor: AppTheme.colors(context).warningSurface,
-            onTap: () {
-              // TODO: Navigate to send reminder screen.
-            },
+            onTap: () => context.push('/reminders'),
           ),
         ],
       ),

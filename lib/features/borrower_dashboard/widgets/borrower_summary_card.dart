@@ -2,40 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../models/dashboard_summary.dart';
-import '../providers/dashboard_providers.dart';
-import '../services/dashboard_service.dart';
+import '../../loan_users/data/loan_users_repository.dart';
+import '../../lender_dashboard/providers/dashboard_providers.dart';
 import 'package:smartkhata/core/theme/app_theme.dart';
 
 /// Displays a modern, banking-style glossy Hero Card for main balances,
-/// followed by a row of secondary KPIs.
-class PortfolioSummaryCard extends ConsumerWidget {
-  const PortfolioSummaryCard({super.key});
+/// followed by a row of secondary KPIs for the borrower.
+class BorrowerSummaryCard extends ConsumerWidget {
+  const BorrowerSummaryCard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final summaryAsync = ref.watch(dashboardSummaryProvider);
+    final connectionsAsync = ref.watch(borrowerConnectionsProvider);
     final service = ref.watch(dashboardServiceProvider);
 
-    return summaryAsync.when(
+    return connectionsAsync.when(
       loading: () => _buildShimmer(context),
       error: (e, _) => _buildError(context, e.toString()),
-      data: (summary) {
+      data: (connections) {
+        final allLoans = connections.expand((c) => c.loans).toList();
+        final activeLoans = allLoans
+            .where((l) => l.status == 'active' || l.status == 'overdue')
+            .toList();
+        final totalBorrowed = allLoans.fold<double>(
+          0,
+          (s, l) => s + l.totalAmount,
+        );
+
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _HeroBalanceCard(
-                totalLent: summary.totalLent,
-                outstanding: summary.outstandingBalance,
-                formattedTotal: service.formatCurrencyExact(summary.totalLent),
-                formattedOutstanding: service.formatCurrencyExact(
-                  summary.outstandingBalance,
-                ),
+                totalBorrowed: totalBorrowed,
+                formattedTotal: service.formatCurrencyExact(totalBorrowed),
               ),
               const SizedBox(height: AppTheme.spacingLg),
-              _SecondaryStatsCard(summary: summary, service: service),
+              _SecondaryStatsCard(
+                lenderCount: connections.length,
+                activeLoansCount: activeLoans.length,
+              ),
             ],
           ),
         );
@@ -48,7 +55,7 @@ class PortfolioSummaryCard extends ConsumerWidget {
       baseColor: Colors.grey.shade200,
       highlightColor: Colors.grey.shade50,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -60,28 +67,12 @@ class PortfolioSummaryCard extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppTheme.spacingLg),
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: AppTheme.radiusMd,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppTheme.spacingLg),
-                Expanded(
-                  child: Container(
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: AppTheme.radiusMd,
-                    ),
-                  ),
-                ),
-              ],
+            Container(
+              height: 100,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: AppTheme.radiusMd,
+              ),
             ),
           ],
         ),
@@ -91,7 +82,7 @@ class PortfolioSummaryCard extends ConsumerWidget {
 
   Widget _buildError(BuildContext context, String message) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: 12),
+      margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
       padding: EdgeInsets.all(AppTheme.spacingLg),
       decoration: AppTheme.cardDecoration(context),
       child: Row(
@@ -112,25 +103,18 @@ class PortfolioSummaryCard extends ConsumerWidget {
 
 class _HeroBalanceCard extends StatelessWidget {
   const _HeroBalanceCard({
-    required this.totalLent,
-    required this.outstanding,
+    required this.totalBorrowed,
     required this.formattedTotal,
-    required this.formattedOutstanding,
   });
 
-  final double totalLent;
-  final double outstanding;
+  final double totalBorrowed;
   final String formattedTotal;
-  final String formattedOutstanding;
 
   @override
   Widget build(BuildContext context) {
-    final progress = totalLent > 0
-        ? (totalLent - outstanding) / totalLent
-        : 0.0;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // A premium dark glossy gradient.
+    // A premium dark glossy gradient similar to the lender dashboard.
     final gradientColors = [const Color(0xFF141E30), const Color(0xFF243B55)];
 
     return Container(
@@ -161,7 +145,7 @@ class _HeroBalanceCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Total Lent',
+                'Total Borrowed',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 14,
@@ -187,68 +171,6 @@ class _HeroBalanceCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Outstanding',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      formattedOutstanding,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Expanded(
-              //   child: Column(
-              //     crossAxisAlignment: CrossAxisAlignment.start,
-              //     children: [
-              //       Text(
-              //         'Repaid',
-              //         style: TextStyle(
-              //           color: Colors.white.withValues(alpha: 0.6),
-              //           fontSize: 12,
-              //         ),
-              //       ),
-              //       const SizedBox(height: 4),
-              //       Text(
-              //         '${(progress * 100).toStringAsFixed(1)}%',
-              //         style: const TextStyle(
-              //           color: Colors.white,
-              //           fontSize: 16,
-              //           fontWeight: FontWeight.w600,
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: progress.clamp(0.0, 1.0),
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                Colors.greenAccent,
-              ),
-              minHeight: 6,
-            ),
-          ),
         ],
       ),
     );
@@ -256,10 +178,13 @@ class _HeroBalanceCard extends StatelessWidget {
 }
 
 class _SecondaryStatsCard extends StatelessWidget {
-  const _SecondaryStatsCard({required this.summary, required this.service});
+  const _SecondaryStatsCard({
+    required this.lenderCount,
+    required this.activeLoansCount,
+  });
 
-  final DashboardSummary summary;
-  final DashboardService service;
+  final int lenderCount;
+  final int activeLoansCount;
 
   @override
   Widget build(BuildContext context) {
@@ -279,28 +204,19 @@ class _SecondaryStatsCard extends StatelessWidget {
         children: [
           Expanded(
             child: _MiniStat(
-              label: 'Interest',
-              value: service.formatCompact(summary.monthlyInterestEarned),
-              icon: Icons.percent_rounded,
-              color: AppTheme.colors(context).accent,
-            ),
-          ),
-          Container(width: 1, height: 40, color: dividerColor),
-          Expanded(
-            child: _MiniStat(
-              label: 'Collection',
-              value: '${summary.collectionRate.toStringAsFixed(0)}%',
-              icon: Icons.speed_rounded,
-              color: AppTheme.colors(context).success,
-            ),
-          ),
-          Container(width: 1, height: 40, color: dividerColor),
-          Expanded(
-            child: _MiniStat(
-              label: 'Loans',
-              value: '${summary.totalLoansCount}/${summary.activeLoansCount}',
-              icon: Icons.folder_open_rounded,
+              label: 'Lenders',
+              value: lenderCount.toString(),
+              icon: Icons.people_alt_rounded,
               color: AppTheme.colors(context).info,
+            ),
+          ),
+          Container(width: 1, height: 40, color: dividerColor),
+          Expanded(
+            child: _MiniStat(
+              label: 'Active Loans',
+              value: activeLoansCount.toString(),
+              icon: Icons.receipt_long_rounded,
+              color: AppTheme.colors(context).warning,
             ),
           ),
         ],

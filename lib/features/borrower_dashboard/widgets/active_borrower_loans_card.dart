@@ -1,41 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shimmer/shimmer.dart';
 
 import '../../loan_users/data/loan_users_repository.dart';
-import '../providers/dashboard_providers.dart';
 import 'package:smartkhata/core/theme/app_theme.dart';
-import 'loan_item_tile.dart';
-import 'section_header.dart';
+import '../../lender_dashboard/widgets/loan_item_tile.dart';
+import '../../lender_dashboard/widgets/section_header.dart';
 
-/// Card showing a compact list of active loans (max 5) with a "View All" link.
-///
-/// Watches [dashboardSummaryProvider] to build the list with mock active-loan
-/// data. Self-manages loading and error states.
-class ActiveLoansCard extends ConsumerWidget {
-  const ActiveLoansCard({super.key});
+class ActiveBorrowerLoansCard extends ConsumerWidget {
+  const ActiveBorrowerLoansCard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final connectionsAsync = ref.watch(activeConnectionsProvider);
-    final service = ref.watch(dashboardServiceProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final connectionsAsync = ref.watch(borrowerConnectionsProvider);
 
     return connectionsAsync.when(
-      loading: () => _buildShimmer(context),
-      error: (e, _) => const SizedBox.shrink(),
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
       data: (connections) {
-        final activeUsers = connections.where((c) {
-          if (c.claimStatus != 'claimed') return false;
-          return c.loans.any((l) => ['active', 'overdue', 'defaulted'].contains(l.status));
-        }).toList();
-        
-        if (activeUsers.isEmpty) {
-          return const SizedBox.shrink();
-        }
-        
-        final displayUsers = activeUsers.take(5).toList();
+        final activeLoanEntries = connections
+            .expand(
+              (c) => c.loans
+                  .where(
+                    (l) => l.status == 'active' || l.status == 'overdue',
+                  )
+                  .map(
+                    (l) => (
+                      loan: l,
+                      lenderName: c.lenderName,
+                      connectionId: c.connectionId,
+                    ),
+                  ),
+            )
+            .toList();
+
+        if (activeLoanEntries.isEmpty) return const SizedBox.shrink();
+
+        final isDark = Theme.of(context).brightness == Brightness.dark;
 
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: 12),
@@ -92,28 +93,29 @@ class ActiveLoansCard extends ConsumerWidget {
                   ),
                 ),
                 Column(
-                  children: [
-                    for (int i = 0; i < displayUsers.length; i++) ...[
-                      LoanItemTile(
-                        borrowerName: displayUsers[i].borrowerName,
-                        amount: service.formatCurrency(
-                          displayUsers[i].loans
-                              .where((l) => ['active', 'overdue', 'defaulted'].contains(l.status))
-                              .fold(0.0, (sum, loan) => sum + loan.totalAmount)
+                  children: activeLoanEntries.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final item = entry.value;
+                    return Column(
+                      children: [
+                        LoanItemTile(
+                          borrowerName: item.lenderName,
+                          amount:
+                              '${item.loan.currency} ${item.loan.totalAmount.toStringAsFixed(0)}',
+                          status: item.loan.status ?? 'active',
+                          onTap: () {
+                            context.push('/borrower-profile/${item.connectionId}');
+                          },
                         ),
-                        status: displayUsers[i].loans.any((l) => l.status == 'overdue') ? 'overdue' : 'active',
-                        onTap: () {
-                          context.push('/borrower-profile/${displayUsers[i].id}');
-                        },
-                      ),
-                      if (i < displayUsers.length - 1)
-                        Divider(
-                          height: 1, 
-                          indent: 84,
-                          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-                        ),
-                    ],
-                  ],
+                        if (index < activeLoanEntries.length - 1)
+                          Divider(
+                            height: 1, 
+                            indent: 84,
+                            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                          ),
+                      ],
+                    );
+                  }).toList(),
                 ),
                 const SizedBox(height: 8),
               ],
@@ -121,26 +123,6 @@ class ActiveLoansCard extends ConsumerWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildShimmer(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.spacingLg,
-        vertical: AppTheme.spacingMd,
-      ),
-      child: Shimmer.fromColors(
-        baseColor: Colors.grey.shade200,
-        highlightColor: Colors.grey.shade50,
-        child: Container(
-          height: 80,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: AppTheme.radiusMd,
-          ),
-        ),
-      ),
     );
   }
 }

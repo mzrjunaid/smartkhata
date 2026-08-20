@@ -21,7 +21,8 @@ final _fullProfileProvider = FutureProvider<Map<String, dynamic>>((ref) async {
 });
 
 class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({super.key, this.initialEditMode = false});
+  final bool initialEditMode;
 
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
@@ -31,6 +32,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isEditing = false;
   bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isEditing = widget.initialEditMode;
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfileScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialEditMode != oldWidget.initialEditMode && widget.initialEditMode) {
+      setState(() {
+        _isEditing = true;
+      });
+    }
+  }
 
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
@@ -104,8 +121,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Profile updated successfully'),
+            content: const Text('Profile updated successfully!'),
             backgroundColor: AppTheme.colors(context).success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -115,6 +134,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           SnackBar(
             content: Text('Update failed: $e'),
             backgroundColor: AppTheme.colors(context).danger,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -126,12 +146,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(_fullProfileProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.colors(context).surface,
+      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FA),
       body: Column(
         children: [
-          DashboardAppBar(title: 'My Profile', showBackButton: false),
+          const DashboardAppBar(
+            title: 'My Profile',
+            subtitle: 'Manage your personal details',
+            showBackButton: false,
+          ),
           Expanded(
             child: profileAsync.when(
               loading: () => Center(
@@ -146,22 +171,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               data: (profile) {
                 _initControllers(profile);
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppTheme.spacingLg),
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
                   child: Form(
                     key: _formKey,
                     child: Column(
                       children: [
                         // ── Avatar header card ──
                         _buildAvatarCard(context),
-                        const SizedBox(height: AppTheme.spacingXl),
+                        const SizedBox(height: 24),
 
                         // ── Info card ──
                         _buildInfoCard(context),
-                        const SizedBox(height: AppTheme.spacingXl),
+                        const SizedBox(height: 24),
 
                         // ── Account details ──
                         _buildAccountCard(context),
-                        const SizedBox(height: AppTheme.spacingXl),
+                        const SizedBox(height: 24),
 
                         // ── Action buttons ──
                         _buildActions(context),
@@ -183,62 +208,86 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildAvatarCard(BuildContext context) {
     final name = _nameController.text.trim();
     final initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(
-        vertical: AppTheme.spacingXxl,
-        horizontal: AppTheme.spacingLg,
+      padding: const EdgeInsets.symmetric(
+        vertical: 32,
+        horizontal: 24,
       ),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppTheme.colors(context).primary, Color(0xFF2E7D32)],
+          colors: [Color(0xFF141E30), Color(0xFF243B55)],
         ),
-        borderRadius: AppTheme.radiusLg,
-        boxShadow: AppTheme.elevatedShadow,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         children: [
           Container(
-            width: 88,
-            height: 88,
+            width: 100,
+            height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withValues(alpha: 0.1),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4),
-                width: 3,
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 2,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Center(
               child: Text(
                 initial,
                 style: const TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 40,
+                  fontWeight: FontWeight.w800,
                   color: Colors.white,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: AppTheme.spacingMd),
+          const SizedBox(height: 20),
           Text(
             name.isNotEmpty ? name : 'User',
             style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
               color: Colors.white,
             ),
           ),
           if (_cnic.isNotEmpty) ...[
-            const SizedBox(height: AppTheme.spacingSm),
-            Text(
-              'CNIC: $_cnic',
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.white.withValues(alpha: 0.7),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'CNIC: $_cnic',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
               ),
             ),
           ],
@@ -250,9 +299,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // ── Editable Personal Info ────────────────────────────────────────────
 
   Widget _buildInfoCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingLg),
-      decoration: AppTheme.cardDecoration(context),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E24) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+          width: 1.5,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -261,52 +326,71 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             children: [
               Text(
                 'Personal Information',
-                style: AppTheme.text(context).headingMedium,
-              ),
-              IconButton(
-                icon: Icon(
-                  _isEditing ? Icons.close : Icons.edit_outlined,
-                  color: AppTheme.colors(context).primary,
-                  size: 22,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                  color: AppTheme.colors(context).textPrimary,
                 ),
-                tooltip: _isEditing ? 'Cancel' : 'Edit',
-                onPressed: () {
-                  if (_isEditing) {
-                    // Revert changes
-                    ref.invalidate(_fullProfileProvider);
-                    _initialized = false;
-                  }
-                  setState(() => _isEditing = !_isEditing);
-                },
+              ),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () {
+                    if (_isEditing) {
+                      // Revert changes
+                      ref.invalidate(_fullProfileProvider);
+                      _initialized = false;
+                    }
+                    setState(() => _isEditing = !_isEditing);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: _isEditing 
+                          ? AppTheme.colors(context).danger.withValues(alpha: 0.1)
+                          : AppTheme.colors(context).primarySurface,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      _isEditing ? Icons.close_rounded : Icons.edit_rounded,
+                      color: _isEditing 
+                          ? AppTheme.colors(context).danger 
+                          : AppTheme.colors(context).primary,
+                      size: 20,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
-          SizedBox(height: AppTheme.spacingLg),
+          const SizedBox(height: 24),
 
           // Full Name
           _buildField(
             label: 'Full Name',
-            icon: Icons.person_outline,
+            icon: Icons.person_rounded,
             controller: _nameController,
             enabled: _isEditing,
             validator: (v) =>
                 (v == null || v.trim().isEmpty) ? 'Name is required' : null,
           ),
-          SizedBox(height: AppTheme.spacingMd),
+          const SizedBox(height: 16),
 
           // CNIC (read-only always)
           _buildReadOnlyField(context, 
             label: 'CNIC',
-            icon: Icons.credit_card,
+            icon: Icons.badge_rounded,
             value: _cnic.isNotEmpty ? _cnic : '—',
             helperText: 'CNIC can only be updated by your lender',
           ),
-          SizedBox(height: AppTheme.spacingMd),
+          const SizedBox(height: 16),
 
           // Phone
           _buildField(
             label: 'Phone Number',
-            icon: Icons.phone_outlined,
+            icon: Icons.phone_iphone_rounded,
             controller: _phoneController,
             enabled: _isEditing,
             keyboardType: TextInputType.phone,
@@ -314,12 +398,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               FilteringTextInputFormatter.allow(RegExp(r'[0-9+\- ]')),
             ],
           ),
-          SizedBox(height: AppTheme.spacingMd),
+          const SizedBox(height: 16),
 
           // Email
           _buildField(
             label: 'Email',
-            icon: Icons.email_outlined,
+            icon: Icons.email_rounded,
             controller: _emailController,
             enabled: _isEditing,
             keyboardType: TextInputType.emailAddress,
@@ -327,30 +411,53 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
           // Save button when editing
           if (_isEditing) ...[
-            SizedBox(height: AppTheme.spacingXl),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton.icon(
-                onPressed: _isSaving ? null : _saveProfile,
-                icon: _isSaving
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Icon(Icons.check, color: Colors.white),
-                label: Text(
-                  _isSaving ? 'Saving...' : 'Save Changes',
-                  style: TextStyle(color: Colors.white),
+            const SizedBox(height: 32),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.colors(context).primary,
+                    AppTheme.colors(context).accent,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.colors(context).primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.colors(context).primary.withValues(alpha: 0.3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _isSaving ? null : _saveProfile,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
+                      child: _isSaving
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 3,
+                              ),
+                            )
+                          : const Text(
+                              'Save Changes',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                    ),
                   ),
                 ),
               ),
@@ -370,23 +477,53 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final joinedDate = _createdAt != null
         ? '${_createdAt!.day}/${_createdAt!.month}/${_createdAt!.year}'
         : '—';
+        
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingLg),
-      decoration: AppTheme.cardDecoration(context),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E24) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+          width: 1.5,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Account Details', style: AppTheme.text(context).headingMedium),
-          const SizedBox(height: AppTheme.spacingLg),
+          Text(
+            'Account Details', 
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+              color: AppTheme.colors(context).textPrimary,
+            ),
+          ),
+          const SizedBox(height: 24),
           _buildDetailRow(context, 
-            Icons.verified_user_outlined,
+            Icons.verified_user_rounded,
             'Claim Status',
             displayClaim,
           ),
-          const Divider(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Divider(
+              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+              height: 1,
+            ),
+          ),
           _buildDetailRow(context, 
-            Icons.calendar_today_outlined,
+            Icons.event_available_rounded,
             'Member Since',
             joinedDate,
           ),
@@ -398,16 +535,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // ── Action Buttons ────────────────────────────────────────────────────
 
   Widget _buildActions(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      padding: EdgeInsets.all(AppTheme.spacingLg),
-      decoration: AppTheme.cardDecoration(context),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E24) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+          width: 1.5,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Security', style: AppTheme.text(context).headingMedium),
-          const SizedBox(height: AppTheme.spacingMd),
+          Text(
+            'Security', 
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+              color: AppTheme.colors(context).textPrimary,
+            ),
+          ),
+          const SizedBox(height: 16),
           _buildActionTile(context, 
-            icon: Icons.lock_outline,
+            icon: Icons.lock_reset_rounded,
             title: 'Change Password',
             subtitle: 'Update your account password',
             onTap: () => _showChangePasswordDialog(),
@@ -428,45 +589,69 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     String? Function(String?)? validator,
     List<TextInputFormatter>? inputFormatters,
   }) {
-    return TextFormField(
-      controller: controller,
-      enabled: enabled,
-      keyboardType: keyboardType,
-      validator: validator,
-      inputFormatters: inputFormatters,
-      style: TextStyle(
-        color: enabled
-            ? AppTheme.colors(context).textPrimary
-            : AppTheme.colors(context).textSecondary,
-        fontWeight: FontWeight.w500,
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: AppTheme.colors(context).textSecondary),
-        prefixIcon: Icon(
-          icon,
-          color: enabled ? AppTheme.colors(context).primary : AppTheme.colors(context).textTertiary,
-          size: 22,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.colors(context).textSecondary,
+              letterSpacing: 0.5,
+            ),
+          ),
         ),
-        filled: true,
-        fillColor: enabled ? AppTheme.colors(context).surface : AppTheme.colors(context).primarySurface.withValues(alpha: 0.3),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.3)),
+        TextFormField(
+          controller: controller,
+          enabled: enabled,
+          keyboardType: keyboardType,
+          validator: validator,
+          inputFormatters: inputFormatters,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: enabled
+                ? AppTheme.colors(context).textPrimary
+                : AppTheme.colors(context).textSecondary,
+          ),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: enabled 
+                ? (isDark ? const Color(0xFF2D2D35) : const Color(0xFFF8F9FA))
+                : (isDark ? Colors.black12 : Colors.grey.withValues(alpha: 0.05)),
+            prefixIcon: Icon(
+              icon,
+              color: enabled ? AppTheme.colors(context).primary : AppTheme.colors(context).textTertiary,
+              size: 22,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: AppTheme.colors(context).primary, width: 2),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+              ),
+            ),
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.3)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppTheme.colors(context).primary, width: 2),
-        ),
-        disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.1)),
-        ),
-      ),
+      ],
     );
   }
 
@@ -476,46 +661,50 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required String value,
     String? helperText,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.colors(context).textSecondary,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
         Container(
           width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            color: AppTheme.colors(context).surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.2)),
+            color: isDark ? Colors.black12 : Colors.grey.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+            ),
           ),
           child: Row(
             children: [
               Icon(icon, color: AppTheme.colors(context).textTertiary, size: 22),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.colors(context).textTertiary,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      value,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.colors(context).textSecondary,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.colors(context).textSecondary,
+                  ),
                 ),
               ),
               Icon(
-                Icons.lock,
-                size: 16,
+                Icons.lock_rounded,
+                size: 18,
                 color: AppTheme.colors(context).textTertiary,
               ),
             ],
@@ -523,12 +712,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         if (helperText != null)
           Padding(
-            padding: EdgeInsets.only(left: 12, top: 4),
+            padding: const EdgeInsets.only(left: 16, top: 6),
             child: Text(
               helperText,
               style: TextStyle(
                 fontSize: 11,
                 color: AppTheme.colors(context).textTertiary,
+                fontStyle: FontStyle.italic,
               ),
             ),
           ),
@@ -540,14 +730,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Row(
       children: [
         Container(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: AppTheme.colors(context).primarySurface,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(icon, color: AppTheme.colors(context).primary, size: 20),
+          child: Icon(icon, color: AppTheme.colors(context).primary, size: 22),
         ),
-        SizedBox(width: 14),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -555,14 +745,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12,
-                  color: AppTheme.colors(context).textTertiary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.colors(context).textSecondary,
                 ),
               ),
+              const SizedBox(height: 2),
               Text(
                 value,
                 style: TextStyle(
-                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
                   color: AppTheme.colors(context).textPrimary,
                 ),
               ),
@@ -579,45 +772,58 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required String subtitle,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: AppTheme.spacingSm),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppTheme.colors(context).warningSurface,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: AppTheme.colors(context).warning, size: 22),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
             ),
-            SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.colors(context).textPrimary,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.colors(context).textSecondary,
-                    ),
-                  ),
-                ],
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.colors(context).warningSurface,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: AppTheme.colors(context).warning, size: 24),
               ),
-            ),
-            Icon(Icons.chevron_right, color: AppTheme.colors(context).textTertiary),
-          ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.colors(context).textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.colors(context).textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: AppTheme.colors(context).textTertiary),
+            ],
+          ),
         ),
       ),
     );
@@ -628,53 +834,65 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   void _showChangePasswordDialog() {
     final newPassController = TextEditingController();
     final confirmPassController = TextEditingController();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          backgroundColor: AppTheme.colors(context).cardBackground,
-          title: Text('Change Password', style: AppTheme.text(context).headingMedium),
+          backgroundColor: isDark ? const Color(0xFF1E1E24) : Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Text(
+            'Change Password', 
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.colors(context).textPrimary,
+            ),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: newPassController,
                 obscureText: true,
-                style: TextStyle(color: AppTheme.colors(context).textPrimary),
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.colors(context).textPrimary,
+                ),
                 decoration: InputDecoration(
                   labelText: 'New Password',
-                  labelStyle: TextStyle(color: AppTheme.colors(context).textSecondary),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.3)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: AppTheme.colors(context).primary),
-                  ),
+                  prefixIcon: const Icon(Icons.lock_rounded),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               TextField(
                 controller: confirmPassController,
                 obscureText: true,
-                style: TextStyle(color: AppTheme.colors(context).textPrimary),
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.colors(context).textPrimary,
+                ),
                 decoration: InputDecoration(
                   labelText: 'Confirm Password',
-                  labelStyle: TextStyle(color: AppTheme.colors(context).textSecondary),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: AppTheme.colors(context).textTertiary.withValues(alpha: 0.3)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: AppTheme.colors(context).primary),
-                  ),
+                  prefixIcon: const Icon(Icons.lock_rounded),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ],
           ),
+          actionsPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.colors(context).textSecondary,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -701,8 +919,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Password updated successfully'),
+                        content: const Text('Password updated successfully!'),
                         backgroundColor: AppTheme.colors(context).success,
+                        behavior: SnackBarBehavior.floating,
                       ),
                     );
                   }
@@ -712,12 +931,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       SnackBar(
                         content: Text('Error: $e'),
                         backgroundColor: AppTheme.colors(context).danger,
+                        behavior: SnackBarBehavior.floating,
                       ),
                     );
                   }
                 }
               },
-              child: const Text('Update'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.colors(context).primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              child: const Text('Update', style: TextStyle(fontWeight: FontWeight.w700)),
             ),
           ],
         );

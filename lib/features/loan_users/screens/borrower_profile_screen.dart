@@ -62,9 +62,10 @@ class BorrowerProfileScreen extends ConsumerWidget {
                         'Pending Loans',
                         connection.loans
                             .where(
-                              (l) => l.status == 'draft' || l.status == 'pending_disbursement',
+                              (l) => l.status == 'pending_disbursement' || l.status == 'pending_invitation',
                             )
                             .toList(),
+                        connection,
                       ),
 
                       _buildLoansSection(context, 
@@ -76,6 +77,7 @@ class BorrowerProfileScreen extends ConsumerWidget {
                             )
                             .toList(),
                         repaymentsAsync.value ?? [],
+                        isLenderView,
                       ),
                       const SizedBox(height: AppTheme.spacingXl),
 
@@ -88,10 +90,11 @@ class BorrowerProfileScreen extends ConsumerWidget {
                             )
                             .toList(),
                         repaymentsAsync.value ?? [],
+                        isLenderView,
                       ),
                       const SizedBox(height: AppTheme.spacingXl),
 
-                      _buildRepaymentsSection(context, repaymentsAsync),
+                      _buildRepaymentsSection(context, repaymentsAsync, isLenderView, connectionId),
                       const SizedBox(height: AppTheme.spacingXl),
 
                       if (isLenderView) _buildManagementSection(context, ref, connection),
@@ -311,7 +314,7 @@ class BorrowerProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInvitedLoansSection(BuildContext context, WidgetRef ref, String title, List<LoanModel> loans) {
+  Widget _buildInvitedLoansSection(BuildContext context, WidgetRef ref, String title, List<LoanModel> loans, ConnectionModel connection) {
     if (loans.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -469,6 +472,12 @@ class BorrowerProfileScreen extends ConsumerWidget {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () async {
+                            if (connection.lenderVerifiedAt == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Connection must be verified by the lender before activating a loan.')),
+                              );
+                              return;
+                            }
                             try {
                               await ref.read(loanUsersRepositoryProvider).updateLoanStatus(loan.id, 'active');
                               ref.invalidate(connectionDetailsProvider(connectionId));
@@ -499,6 +508,7 @@ class BorrowerProfileScreen extends ConsumerWidget {
     String title,
     List<LoanModel> loans,
     List<RepaymentModel> allRepayments,
+    bool isLenderView,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -543,9 +553,9 @@ class BorrowerProfileScreen extends ConsumerWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
-                  onTap: () {
+                  onTap: isLenderView ? () {
                     context.push('/repayments/$connectionId');
-                  },
+                  } : null,
                   child: Padding(
                     padding: EdgeInsets.all(AppTheme.spacingLg),
                     child: Column(
@@ -705,6 +715,27 @@ class BorrowerProfileScreen extends ConsumerWidget {
                               ),
                           ],
                         ),
+                        if (!isLenderView && (loan.status == 'active' || loan.status == 'overdue')) ...[
+                          const SizedBox(height: AppTheme.spacingLg),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                context.push('/borrower-repayment-form?loanId=${loan.id}');
+                              },
+                              icon: const Icon(Icons.payment),
+                              label: const Text('Make Repayment'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.colors(context).primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -743,6 +774,8 @@ class BorrowerProfileScreen extends ConsumerWidget {
   Widget _buildRepaymentsSection(
     BuildContext context,
     AsyncValue<List<RepaymentModel>> repaymentsAsync,
+    bool isLenderView,
+    String connectionId,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -787,7 +820,11 @@ class BorrowerProfileScreen extends ConsumerWidget {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
                     onTap: () {
-                      context.push('/repayments/repayment-review/${rep.id}');
+                      if (isLenderView) {
+                        context.push('/repayments/repayment-review/${rep.id}');
+                      } else {
+                        context.push('/borrower-repayment-form?repaymentId=${rep.id}');
+                      }
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(AppTheme.spacingMd),

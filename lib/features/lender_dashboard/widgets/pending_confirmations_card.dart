@@ -25,50 +25,71 @@ class PendingConfirmationsCard extends ConsumerWidget {
           return const SizedBox.shrink(); // Don't show if there are no pending requests
         }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SectionHeader(
-              title: 'Needs Confirmation',
-              onViewAll: null, // No view all needed for pending
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: 12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E1E24) : Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+            border: Border.all(
+              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+              width: 1.5,
             ),
-            Container(
-              margin: EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingLg,
-              ),
-              decoration: BoxDecoration(
-                color: AppTheme.colors(context).cardBackground,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: AppTheme.colors(context).warning.withValues(alpha: 0.5),
-                  width: 1.5,
-                ),
-              ),
-              child: Column(
-                children: [
-                  for (int i = 0; i < activities.length; i++) ...[
-                    InkWell(
-                      onTap: () {
-                        context.push('/repayments/repayment-review/${activities[i].id.replaceFirst('rep_', '')}');
-                      },
-                      borderRadius: i == 0 
-                          ? const BorderRadius.vertical(top: Radius.circular(12)) 
-                          : i == activities.length - 1 
-                              ? const BorderRadius.vertical(bottom: Radius.circular(12))
-                              : BorderRadius.zero,
-                      child: ActivityTile(
-                        activity: activities[i],
-                        formattedAmount: service.formatCurrency(activities[i].amount),
-                        relativeDate: service.relativeTime(activities[i].date),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'NEEDS CONFIRMATION',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                          color: AppTheme.colors(context).textSecondary,
+                        ),
                       ),
-                    ),
-                    if (i < activities.length - 1)
-                      const Divider(height: 1, indent: 56),
+                    ],
+                  ),
+                ),
+                Column(
+                  children: [
+                    for (int i = 0; i < activities.length; i++) ...[
+                      InkWell(
+                        onTap: () {
+                          context.push('/repayments/repayment-review/${activities[i].id.replaceFirst('rep_', '')}');
+                        },
+                        child: ActivityTile(
+                          activity: activities[i],
+                          formattedAmount: service.formatCurrency(activities[i].amount),
+                          relativeDate: service.relativeTime(activities[i].date),
+                        ),
+                      ),
+                      if (i < activities.length - 1)
+                        Divider(
+                          height: 1, 
+                          indent: 68,
+                          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                        ),
+                    ],
                   ],
-                ],
-              ),
+                ),
+                const SizedBox(height: 8),
+              ],
             ),
-          ],
+          ),
         );
       },
     );

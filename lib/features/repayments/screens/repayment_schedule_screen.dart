@@ -7,6 +7,7 @@ import '../../new_loan/models/connection_model.dart';
 import '../../new_loan/models/loan_model.dart';
 
 import '../../../core/widgets/dashboard_app_bar.dart';
+import '../../../core/providers/role_provider.dart';
 
 class RepaymentScheduleScreen extends ConsumerWidget {
   const RepaymentScheduleScreen({super.key, required this.connectionId});
@@ -19,6 +20,8 @@ class RepaymentScheduleScreen extends ConsumerWidget {
     final repaymentsAsync = ref.watch(
       connectionRepaymentsProvider(connectionId),
     );
+    final role = ref.watch(roleProvider);
+    final isLender = role == AppRole.lender;
 
     return Scaffold(
       backgroundColor: AppTheme.colors(context).surface,
@@ -65,6 +68,9 @@ class RepaymentScheduleScreen extends ConsumerWidget {
                           (r) => r.status == 'pending' && r.dueDate != null,
                         )
                         .toList();
+                    final pendingConfirmations = repayments
+                        .where((r) => r.status == 'pending_confirmation')
+                        .toList();
 
                     return SingleChildScrollView(
                       padding: EdgeInsets.all(AppTheme.spacingLg),
@@ -81,17 +87,18 @@ class RepaymentScheduleScreen extends ConsumerWidget {
                                 'Upcoming Schedule',
                                 style: AppTheme.text(context).headingMedium,
                               ),
-                              TextButton.icon(
-                                onPressed: activeLoans.isEmpty
-                                    ? null
-                                    : () => _showAddScheduleDialog(
-                                        context,
-                                        ref,
-                                        activeLoans,
-                                      ),
-                                icon: Icon(Icons.add),
-                                label: Text('Add'),
-                              ),
+                              if (isLender)
+                                TextButton.icon(
+                                  onPressed: activeLoans.isEmpty
+                                      ? null
+                                      : () => _showAddScheduleDialog(
+                                          context,
+                                          ref,
+                                          activeLoans,
+                                        ),
+                                  icon: Icon(Icons.add),
+                                  label: Text('Add'),
+                                ),
                             ],
                           ),
                           SizedBox(height: AppTheme.spacingMd),
@@ -113,6 +120,18 @@ class RepaymentScheduleScreen extends ConsumerWidget {
 
                           SizedBox(height: AppTheme.spacingXxl),
 
+                          if (pendingConfirmations.isNotEmpty) ...[
+                            Text(
+                              'Pending Confirmations',
+                              style: AppTheme.text(context).headingMedium,
+                            ),
+                            const SizedBox(height: AppTheme.spacingMd),
+                            ...pendingConfirmations.map(
+                              (rep) => _PendingConfirmationCard(repayment: rep),
+                            ),
+                            SizedBox(height: AppTheme.spacingXxl),
+                          ],
+
                           Text(
                             'Previous Repayments',
                             style: AppTheme.text(context).headingMedium,
@@ -129,7 +148,7 @@ class RepaymentScheduleScreen extends ConsumerWidget {
                               (rep) => _PreviousRepaymentCard(repayment: rep),
                             ),
 
-                          const SizedBox(height: 100),
+                          const SizedBox(height: 120),
                         ],
                       ),
                     );
@@ -467,6 +486,9 @@ class _UpcomingRepaymentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dateStr =
         repayment.dueDate?.toLocal().toString().split(' ')[0] ?? 'Unknown Date';
+    final role = ref.watch(roleProvider);
+    final isLender = role == AppRole.lender;
+
     return Container(
       margin: EdgeInsets.only(bottom: AppTheme.spacingMd),
       decoration: BoxDecoration(
@@ -526,22 +548,24 @@ class _UpcomingRepaymentCard extends StatelessWidget {
                 tooltip: 'Adjust Schedule',
               ),
             ),
-            SizedBox(width: AppTheme.spacingSm),
-            Container(
-              decoration: BoxDecoration(
-                color: AppTheme.colors(context).dangerSurface,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.delete_outline,
-                  color: AppTheme.colors(context).danger,
-                  size: 20,
+            if (isLender) ...[
+              SizedBox(width: AppTheme.spacingSm),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.colors(context).dangerSurface,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                onPressed: () => _showDeleteDialog(context),
-                tooltip: 'Remove Schedule',
+                child: IconButton(
+                  icon: Icon(
+                    Icons.delete_outline,
+                    color: AppTheme.colors(context).danger,
+                    size: 20,
+                  ),
+                  onPressed: () => _showDeleteDialog(context),
+                  tooltip: 'Remove Schedule',
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -730,6 +754,63 @@ class _PreviousRepaymentCard extends StatelessWidget {
         subtitle: Padding(
           padding: EdgeInsets.only(top: 4),
           child: Text('Paid on: $dateStr', style: AppTheme.text(context).bodyMedium),
+        ),
+      ),
+    );
+  }
+}
+
+class _PendingConfirmationCard extends StatelessWidget {
+  const _PendingConfirmationCard({required this.repayment});
+
+  final RepaymentModel repayment;
+
+  @override
+  Widget build(BuildContext context) {
+    final dateStr =
+        repayment.paidDate?.toLocal().toString().split(' ')[0] ??
+        repayment.dueDate?.toLocal().toString().split(' ')[0] ??
+        'Unknown Date';
+    return Container(
+      margin: EdgeInsets.only(bottom: AppTheme.spacingMd),
+      decoration: BoxDecoration(
+        color: AppTheme.colors(context).cardBackground,
+        borderRadius: AppTheme.radiusMd,
+        border: Border.all(color: AppTheme.colors(context).warningSurface, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.colors(context).warning.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppTheme.spacingMd,
+          vertical: AppTheme.spacingSm,
+        ),
+        leading: Container(
+          padding: EdgeInsets.all(AppTheme.spacingSm),
+          decoration: BoxDecoration(
+            color: AppTheme.colors(context).warningSurface,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(Icons.hourglass_empty, color: AppTheme.colors(context).warning),
+        ),
+        title: Text(
+          'PKR ${repayment.amount.toStringAsFixed(0)}',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.colors(context).textPrimary),
+        ),
+        subtitle: Padding(
+          padding: EdgeInsets.only(top: 4),
+          child: Text(
+            'Submitted: $dateStr',
+            style: TextStyle(
+              color: AppTheme.colors(context).warning,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
       ),
     );

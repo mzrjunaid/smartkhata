@@ -16,7 +16,7 @@ class DashboardRepository {
     final loansResponse = await _client
         .from('loans')
         .select('''
-          id, principal_amount, status,
+          id, principal_amount, total_amount, status,
           connections!inner(lender_profile_id)
         ''')
         .eq('connections.lender_profile_id', lenderId);
@@ -40,7 +40,7 @@ class DashboardRepository {
       validLoansCount++;
       
       if (status == 'active' || status == 'completed' || status == 'overdue') {
-        totalLent += (loan['principal_amount'] as num).toDouble();
+        totalLent += (loan['total_amount'] as num).toDouble();
       }
       if (status == 'active') activeLoansCount++;
       if (status == 'overdue') overdueCount++;
@@ -243,7 +243,7 @@ class DashboardRepository {
           )
         ''')
         .eq('loans.connections.lender_profile_id', lenderId)
-        .eq('status', 'pending')
+        .eq('status', 'pending_confirmation')
         .not('paid_date', 'is', null)
         .order('paid_date', ascending: false);
 

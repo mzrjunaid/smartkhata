@@ -20,56 +20,96 @@ class RecentActivityCard extends ConsumerWidget {
     final service = ref.watch(dashboardServiceProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SectionHeader(
-          title: 'Upcoming Activity',
-          onViewAll: () {
-            // TODO: Navigate to full activity history screen.
-          },
-        ),
-        Container(
-          margin: EdgeInsets.symmetric(
-            horizontal: AppTheme.spacingLg,
-          ),
-          decoration: AppTheme.cardDecoration(context),
-          child: activityAsync.when(
-            loading: () => _buildShimmer(context),
-            error: (e, _) => Padding(
-              padding: EdgeInsets.all(AppTheme.spacingLg),
-              child: Text('Error: $e', style: AppTheme.text(context).bodyMedium),
+    return activityAsync.when(
+      loading: () => _buildShimmer(context),
+      error: (e, _) => Padding(
+        padding: EdgeInsets.all(AppTheme.spacingLg),
+        child: Text('Error: $e', style: AppTheme.text(context).bodyMedium),
+      ),
+      data: (activities) {
+        if (activities.isEmpty) {
+          return const SizedBox.shrink(); // Could show empty state, or nothing
+        }
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: 12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E1E24) : Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+            border: Border.all(
+              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+              width: 1.5,
             ),
-            data: (activities) {
-              if (activities.isEmpty) {
-                return Padding(
-                  padding: EdgeInsets.all(AppTheme.spacingXl),
-                  child: Center(
-                    child: Text(
-                      'No upcoming activity',
-                      style: AppTheme.text(context).bodyMedium,
-                    ),
-                  ),
-                );
-              }
-              return Column(
-                children: [
-                  for (int i = 0; i < activities.length; i++) ...[
-                    ActivityTile(
-                      activity: activities[i],
-                      formattedAmount:
-                          service.formatCurrency(activities[i].amount),
-                      relativeDate: service.relativeTime(activities[i].date),
-                    ),
-                    if (i < activities.length - 1)
-                      const Divider(height: 1, indent: 56),
-                  ],
-                ],
-              );
-            },
           ),
-        ),
-      ],
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'UPCOMING ACTIVITY',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                          color: AppTheme.colors(context).textSecondary,
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          // TODO: Navigate to full activity history screen.
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          child: Text(
+                            'View All',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.colors(context).primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  children: [
+                    for (int i = 0; i < activities.length; i++) ...[
+                      ActivityTile(
+                        activity: activities[i],
+                        formattedAmount:
+                            service.formatCurrency(activities[i].amount),
+                        relativeDate: service.relativeTime(activities[i].date),
+                      ),
+                      if (i < activities.length - 1)
+                        Divider(
+                          height: 1, 
+                          indent: 68,
+                          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                        ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

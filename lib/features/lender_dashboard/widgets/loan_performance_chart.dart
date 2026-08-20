@@ -20,9 +20,12 @@ class LoanPerformanceChart extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionHeader(title: 'Loan Performance'),
+        // SectionHeader(title: 'Loan Performance'),
         Container(
-          margin: EdgeInsets.symmetric(horizontal: AppTheme.spacingLg),
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingLg,
+            vertical: 12,
+          ),
           padding: EdgeInsets.all(AppTheme.spacingLg),
           decoration: AppTheme.cardDecoration(context),
           child: statsAsync.when(

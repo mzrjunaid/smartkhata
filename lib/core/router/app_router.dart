@@ -13,11 +13,14 @@ import '../../features/loan_users/screens/borrower_profile_screen.dart';
 import '../../features/repayments/screens/repayments_borrower_list_screen.dart';
 import '../../features/repayments/screens/repayment_schedule_screen.dart';
 import '../../features/repayments/screens/repayment_review_screen.dart';
+import '../../features/repayments/screens/borrower_repayment_form_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/transactions/screens/transactions_screen.dart';
 import '../../features/audit_logs/screens/audit_logs_screen.dart';
+import '../../features/notifications/screens/notifications_screen.dart';
 import '../widgets/app_shell.dart';
+import '../../features/reminders/screens/reminders_screen.dart';
 
 /// Converts a [Stream] into a [ChangeNotifier] so GoRouter
 /// can re-evaluate its redirect whenever the stream emits.
@@ -57,6 +60,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/signup',
         builder: (context, state) => const SignupScreen(),
       ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return AppShell(navigationShell: navigationShell);
@@ -82,6 +89,17 @@ final routerProvider = Provider<GoRouter>((ref) {
                     },
                   ),
                   GoRoute(
+                    path: 'borrower-repayment-form',
+                    builder: (context, state) {
+                      final repaymentId = state.uri.queryParameters['repaymentId'];
+                      final loanId = state.uri.queryParameters['loanId'];
+                      return BorrowerRepaymentFormScreen(
+                        repaymentId: repaymentId,
+                        loanId: loanId,
+                      );
+                    },
+                  ),
+                  GoRoute(
                     path: 'repayments',
                     builder: (context, state) => const RepaymentsBorrowerListScreen(),
                     routes: [
@@ -104,6 +122,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'audit-logs',
                     builder: (context, state) => const AuditLogsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'reminders',
+                    builder: (context, state) => const RemindersScreen(),
                   ),
                 ],
               ),
@@ -132,7 +154,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/profile',
-                builder: (context, state) => const ProfileScreen(),
+                builder: (context, state) {
+                  final extra = state.extra as Map<String, dynamic>?;
+                  final edit = extra?['edit'] as bool? ?? false;
+                  return ProfileScreen(initialEditMode: edit);
+                },
               ),
             ],
           ),

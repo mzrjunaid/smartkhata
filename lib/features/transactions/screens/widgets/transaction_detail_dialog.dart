@@ -68,8 +68,8 @@ class TransactionDetailDialog extends StatelessWidget {
           SizedBox(height: 32),
           
           // Details List
-          _buildDetailRow(context, 'Status', transaction.status.toUpperCase(), 
-            valueColor: transaction.status == 'pending' ? AppTheme.colors(context).warning : null),
+          _buildDetailRow(context, 'Status', transaction.status.toUpperCase().replaceAll('_', ' '), 
+            valueColor: (transaction.status == 'pending' || transaction.status == 'pending_confirmation') ? AppTheme.colors(context).warning : null),
           _buildDivider(context),
           _buildDetailRow(context, 'Date', DateFormat('MMMM d, yyyy').format(transaction.date)),
           _buildDivider(context),

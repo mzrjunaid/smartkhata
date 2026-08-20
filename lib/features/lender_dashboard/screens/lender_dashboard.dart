@@ -68,19 +68,13 @@ class _LenderDashboardState extends ConsumerState<LenderDashboard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
-            SizedBox(height: AppTheme.spacingLg),
+            SizedBox(height: 12), // initial top spacing before first card's 12px vertical margin
             QuickActionsBar(),
-            SizedBox(height: AppTheme.spacingXl),
             PortfolioSummaryCard(),
-            SizedBox(height: AppTheme.spacingXl),
             LoanPerformanceChart(),
-            SizedBox(height: AppTheme.spacingXl),
             SentInvitationsCard(),
-            SizedBox(height: AppTheme.spacingXl),
             PendingDisbursementsCard(),
-            SizedBox(height: AppTheme.spacingXl),
             ActiveLoansCard(),
-            SizedBox(height: AppTheme.spacingXl),
             PendingConfirmationsCard(),
             RecentActivityCard(),
             SizedBox(height: 120),
