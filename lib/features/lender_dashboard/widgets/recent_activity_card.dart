@@ -5,7 +5,6 @@ import 'package:shimmer/shimmer.dart';
 import '../providers/dashboard_providers.dart';
 import 'package:smartkhata/core/theme/app_theme.dart';
 import 'activity_tile.dart';
-import 'section_header.dart';
 
 /// Timeline-style feed of the most recent loan transactions.
 ///
@@ -31,19 +30,26 @@ class RecentActivityCard extends ConsumerWidget {
           return const SizedBox.shrink(); // Could show empty state, or nothing
         }
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: 12),
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingLg,
+            vertical: 12,
+          ),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E1E24) : Colors.white,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.08),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : Colors.grey.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
             ],
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.03),
               width: 1.5,
             ),
           ),
@@ -72,7 +78,10 @@ class RecentActivityCard extends ConsumerWidget {
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           child: Text(
                             'View All',
                             style: TextStyle(
@@ -91,15 +100,18 @@ class RecentActivityCard extends ConsumerWidget {
                     for (int i = 0; i < activities.length; i++) ...[
                       ActivityTile(
                         activity: activities[i],
-                        formattedAmount:
-                            service.formatCurrency(activities[i].amount),
+                        formattedAmount: service.formatCurrency(
+                          activities[i].amount,
+                        ),
                         relativeDate: service.relativeTime(activities[i].date),
                       ),
                       if (i < activities.length - 1)
                         Divider(
-                          height: 1, 
+                          height: 1,
                           indent: 68,
-                          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                          color: isDark
+                              ? Colors.white10
+                              : Colors.black.withValues(alpha: 0.05),
                         ),
                     ],
                   ],
@@ -140,11 +152,7 @@ class RecentActivityCard extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 100,
-                        height: 14,
-                        color: Colors.white,
-                      ),
+                      Container(width: 100, height: 14, color: Colors.white),
                       const SizedBox(height: 6),
                       Container(width: 140, height: 12, color: Colors.white),
                     ],

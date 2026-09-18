@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../loan_users/data/loan_users_repository.dart';
-import 'section_header.dart';
 
 class SentInvitationsCard extends ConsumerWidget {
   const SentInvitationsCard({super.key});
@@ -26,19 +25,26 @@ class SentInvitationsCard extends ConsumerWidget {
         }
 
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: 12),
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingLg,
+            vertical: 12,
+          ),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E1E24) : Colors.white,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.08),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : Colors.grey.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
             ],
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.03),
               width: 1.5,
             ),
           ),
@@ -67,7 +73,10 @@ class SentInvitationsCard extends ConsumerWidget {
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           child: Text(
                             'View All',
                             style: TextStyle(
@@ -97,7 +106,9 @@ class SentInvitationsCard extends ConsumerWidget {
                           InkWell(
                             onTap: () {
                               // Navigate to profile or detail
-                              context.push('/borrower-profile/${connection.id}');
+                              context.push(
+                                '/borrower-profile/${connection.id}',
+                              );
                             },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
@@ -119,9 +130,8 @@ class SentInvitationsCard extends ConsumerWidget {
                                           ? connection.borrowerName[0]
                                                 .toUpperCase()
                                           : '?',
-                                      style: AppTheme.text(
-                                        context,
-                                      ).labelBold.copyWith(color: theme.primary),
+                                      style: AppTheme.text(context).labelBold
+                                          .copyWith(color: theme.primary),
                                     ),
                                   ),
                                   const SizedBox(width: AppTheme.spacingMd),
@@ -163,7 +173,8 @@ class SentInvitationsCard extends ConsumerWidget {
                                         ),
                                         child: Text(
                                           'Pending',
-                                          style: AppTheme.text(context).bodySmall
+                                          style: AppTheme.text(context)
+                                              .bodySmall
                                               .copyWith(
                                                 color: theme.warning,
                                                 fontWeight: FontWeight.w600,
@@ -172,7 +183,9 @@ class SentInvitationsCard extends ConsumerWidget {
                                       ),
                                       if (totalDraftAmount > 0)
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 4),
+                                          padding: const EdgeInsets.only(
+                                            top: 4,
+                                          ),
                                           child: Text(
                                             totalDraftAmount.toStringAsFixed(2),
                                             style: AppTheme.text(
@@ -192,9 +205,11 @@ class SentInvitationsCard extends ConsumerWidget {
                                       : pendingInvitations.length) -
                                   1)
                             Divider(
-                              height: 1, 
+                              height: 1,
                               indent: 76,
-                              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                              color: isDark
+                                  ? Colors.white10
+                                  : Colors.black.withValues(alpha: 0.05),
                             ),
                         ],
                       );

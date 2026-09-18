@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../providers/dashboard_providers.dart';
 import 'package:smartkhata/core/theme/app_theme.dart';
 import 'activity_tile.dart';
-import 'section_header.dart';
 
 class PendingConfirmationsCard extends ConsumerWidget {
   const PendingConfirmationsCard({super.key});
@@ -26,19 +25,26 @@ class PendingConfirmationsCard extends ConsumerWidget {
         }
 
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: 12),
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingLg,
+            vertical: 12,
+          ),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E1E24) : Colors.white,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.08),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : Colors.grey.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
             ],
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.03),
               width: 1.5,
             ),
           ),
@@ -69,19 +75,27 @@ class PendingConfirmationsCard extends ConsumerWidget {
                     for (int i = 0; i < activities.length; i++) ...[
                       InkWell(
                         onTap: () {
-                          context.push('/repayments/repayment-review/${activities[i].id.replaceFirst('rep_', '')}');
+                          context.push(
+                            '/repayments/repayment-review/${activities[i].id.replaceFirst('rep_', '')}',
+                          );
                         },
                         child: ActivityTile(
                           activity: activities[i],
-                          formattedAmount: service.formatCurrency(activities[i].amount),
-                          relativeDate: service.relativeTime(activities[i].date),
+                          formattedAmount: service.formatCurrency(
+                            activities[i].amount,
+                          ),
+                          relativeDate: service.relativeTime(
+                            activities[i].date,
+                          ),
                         ),
                       ),
                       if (i < activities.length - 1)
                         Divider(
-                          height: 1, 
+                          height: 1,
                           indent: 68,
-                          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                          color: isDark
+                              ? Colors.white10
+                              : Colors.black.withValues(alpha: 0.05),
                         ),
                     ],
                   ],

@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../loan_users/data/loan_users_repository.dart';
 import '../../loan_users/models/repayment_model.dart';
 import 'package:smartkhata/core/theme/app_theme.dart';
-import '../../lender_dashboard/widgets/section_header.dart';
 
 class UpcomingRepaymentsCard extends ConsumerWidget {
   const UpcomingRepaymentsCard({super.key});
@@ -23,19 +22,26 @@ class UpcomingRepaymentsCard extends ConsumerWidget {
         final isDark = Theme.of(context).brightness == Brightness.dark;
 
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: 12),
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingLg,
+            vertical: 12,
+          ),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E1E24) : Colors.white,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.08),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : Colors.grey.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
             ],
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.03),
               width: 1.5,
             ),
           ),
@@ -100,10 +106,11 @@ class _UpcomingRepaymentsSection extends ConsumerWidget {
       loading: () => const SizedBox.shrink(),
       error: (_, _) => const SizedBox.shrink(),
       data: (repayments) {
-        final upcoming = repayments
-            .where((r) => r.status == 'pending' && r.dueDate != null)
-            .toList()
-          ..sort((a, b) => a.dueDate!.compareTo(b.dueDate!));
+        final upcoming =
+            repayments
+                .where((r) => r.status == 'pending' && r.dueDate != null)
+                .toList()
+              ..sort((a, b) => a.dueDate!.compareTo(b.dueDate!));
 
         if (upcoming.isEmpty) return const SizedBox.shrink();
 
@@ -131,9 +138,11 @@ class _UpcomingRepaymentsSection extends ConsumerWidget {
                   _UpcomingTile(repayment: r),
                   if (index < 2 && index < upcoming.length - 1)
                     Divider(
-                      height: 1, 
+                      height: 1,
                       indent: 84,
-                      color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                      color: isDark
+                          ? Colors.white10
+                          : Colors.black.withValues(alpha: 0.05),
                     ),
                 ],
               );
@@ -161,9 +170,13 @@ class _UpcomingTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => context.push('/borrower-repayment-form?repaymentId=${repayment.id}'),
+        onTap: () => context.push(
+          '/borrower-repayment-form?repaymentId=${repayment.id}',
+        ),
         splashColor: AppTheme.colors(context).primary.withValues(alpha: 0.05),
-        highlightColor: AppTheme.colors(context).primary.withValues(alpha: 0.02),
+        highlightColor: AppTheme.colors(
+          context,
+        ).primary.withValues(alpha: 0.02),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Row(
@@ -175,18 +188,26 @@ class _UpcomingTile extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: daysLeft < 7
                         ? [const Color(0xFFF39C12), const Color(0xFFE67E22)]
-                        : (isDark 
-                            ? [const Color(0xFF2C3E50), const Color(0xFF3498DB)]
-                            : [const Color(0xFFE0EAFC), const Color(0xFFCFDEF3)]),
+                        : (isDark
+                              ? [
+                                  const Color(0xFF2C3E50),
+                                  const Color(0xFF3498DB),
+                                ]
+                              : [
+                                  const Color(0xFFE0EAFC),
+                                  const Color(0xFFCFDEF3),
+                                ]),
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: daysLeft < 7 
+                      color: daysLeft < 7
                           ? const Color(0xFFF39C12).withValues(alpha: 0.3)
-                          : (isDark ? Colors.black26 : Colors.blue.withValues(alpha: 0.2)),
+                          : (isDark
+                                ? Colors.black26
+                                : Colors.blue.withValues(alpha: 0.2)),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -196,7 +217,7 @@ class _UpcomingTile extends StatelessWidget {
                   child: Icon(
                     Icons.event_rounded,
                     size: 24,
-                    color: daysLeft < 7 
+                    color: daysLeft < 7
                         ? Colors.white
                         : (isDark ? Colors.white : const Color(0xFF2C3E50)),
                   ),
@@ -226,7 +247,7 @@ class _UpcomingTile extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'Due: $dateStr', 
+                          'Due: $dateStr',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -239,7 +260,10 @@ class _UpcomingTile extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: daysLeft < 0
                       ? AppTheme.colors(context).dangerSurface
@@ -251,14 +275,18 @@ class _UpcomingTile extends StatelessWidget {
                     color: daysLeft < 0
                         ? AppTheme.colors(context).danger.withValues(alpha: 0.3)
                         : (daysLeft < 7
-                              ? AppTheme.colors(context).warning.withValues(alpha: 0.3)
+                              ? AppTheme.colors(
+                                  context,
+                                ).warning.withValues(alpha: 0.3)
                               : Colors.transparent),
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(
-                      daysLeft < 0 ? Icons.error_rounded : Icons.schedule_rounded,
+                      daysLeft < 0
+                          ? Icons.error_rounded
+                          : Icons.schedule_rounded,
                       size: 14,
                       color: daysLeft < 0
                           ? AppTheme.colors(context).danger

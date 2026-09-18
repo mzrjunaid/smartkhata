@@ -3,23 +3,25 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/notification_model.dart';
 import '../../../core/providers/profile_providers.dart';
 
-final notificationsRepositoryProvider = Provider<NotificationsRepository>((ref) {
+final notificationsRepositoryProvider = Provider<NotificationsRepository>((
+  ref,
+) {
   return NotificationsRepository(Supabase.instance.client);
 });
 
-final notificationsProvider = StreamProvider.autoDispose<List<NotificationModel>>((ref) {
-  final currentProfileAsync = ref.watch(currentProfileProvider);
-  
-  return currentProfileAsync.when(
-    data: (profile) {
-      if (profile == null) return Stream.value([]);
-      final repository = ref.watch(notificationsRepositoryProvider);
-      return repository.watchNotifications(profile['id']);
-    },
-    loading: () => Stream.value([]),
-    error: (_, __) => Stream.value([]),
-  );
-});
+final notificationsProvider =
+    StreamProvider.autoDispose<List<NotificationModel>>((ref) {
+      final currentProfileAsync = ref.watch(currentProfileProvider);
+
+      return currentProfileAsync.when(
+        data: (profile) {
+          final repository = ref.watch(notificationsRepositoryProvider);
+          return repository.watchNotifications(profile['id']);
+        },
+        loading: () => Stream.value([]),
+        error: (_, _) => Stream.value([]),
+      );
+    });
 
 class NotificationsRepository {
   NotificationsRepository(this._supabase);
@@ -32,7 +34,10 @@ class NotificationsRepository {
         .stream(primaryKey: ['id'])
         .eq('profile_id', profileId)
         .order('created_at', ascending: false)
-        .map((data) => data.map((json) => NotificationModel.fromJson(json)).toList());
+        .map(
+          (data) =>
+              data.map((json) => NotificationModel.fromJson(json)).toList(),
+        );
   }
 
   Future<void> markAsRead(String id) async {

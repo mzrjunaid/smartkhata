@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../loan_users/data/loan_users_repository.dart';
 import 'package:smartkhata/core/theme/app_theme.dart';
 import '../../lender_dashboard/widgets/loan_item_tile.dart';
-import '../../lender_dashboard/widgets/section_header.dart';
 
 class ActiveBorrowerLoansCard extends ConsumerWidget {
   const ActiveBorrowerLoansCard({super.key});
@@ -21,9 +20,7 @@ class ActiveBorrowerLoansCard extends ConsumerWidget {
         final activeLoanEntries = connections
             .expand(
               (c) => c.loans
-                  .where(
-                    (l) => l.status == 'active' || l.status == 'overdue',
-                  )
+                  .where((l) => l.status == 'active' || l.status == 'overdue')
                   .map(
                     (l) => (
                       loan: l,
@@ -39,19 +36,26 @@ class ActiveBorrowerLoansCard extends ConsumerWidget {
         final isDark = Theme.of(context).brightness == Brightness.dark;
 
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: 12),
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingLg,
+            vertical: 12,
+          ),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E1E24) : Colors.white,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.08),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : Colors.grey.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
             ],
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.03),
               width: 1.5,
             ),
           ),
@@ -78,7 +82,10 @@ class ActiveBorrowerLoansCard extends ConsumerWidget {
                         onTap: () => context.go('/loan-users'),
                         borderRadius: BorderRadius.circular(12),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           child: Text(
                             'View All',
                             style: TextStyle(
@@ -104,14 +111,18 @@ class ActiveBorrowerLoansCard extends ConsumerWidget {
                               '${item.loan.currency} ${item.loan.totalAmount.toStringAsFixed(0)}',
                           status: item.loan.status ?? 'active',
                           onTap: () {
-                            context.push('/borrower-profile/${item.connectionId}');
+                            context.push(
+                              '/borrower-profile/${item.connectionId}',
+                            );
                           },
                         ),
                         if (index < activeLoanEntries.length - 1)
                           Divider(
-                            height: 1, 
+                            height: 1,
                             indent: 84,
-                            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.black.withValues(alpha: 0.05),
                           ),
                       ],
                     );

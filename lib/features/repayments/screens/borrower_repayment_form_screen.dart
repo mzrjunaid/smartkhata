@@ -88,7 +88,9 @@ class _BorrowerRepaymentFormScreenState
             content: const Text('Payment submitted successfully!'),
             backgroundColor: AppTheme.colors(context).success,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
         context.pop();
@@ -125,7 +127,8 @@ class _BorrowerRepaymentFormScreenState
         data: (repayment) {
           if (!_isInit) {
             _amountController.text = repayment.amount.toStringAsFixed(0);
-            if (repayment.method != null && _methods.contains(repayment.method)) {
+            if (repayment.method != null &&
+                _methods.contains(repayment.method)) {
               _selectedMethod = repayment.method!;
             }
             if (repayment.note != null) {
@@ -149,372 +152,443 @@ class _BorrowerRepaymentFormScreenState
     final isReadOnly = existingRepayment?.status == 'pending_confirmation';
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FA),
+      backgroundColor: isDark
+          ? const Color(0xFF121212)
+          : const Color(0xFFF8F9FA),
       body: Column(
         children: [
           DashboardAppBar(
-            title: existingRepayment != null ? 'Pay Installment' : 'Make Payment',
+            title: existingRepayment != null
+                ? 'Pay Installment'
+                : 'Make Payment',
             subtitle: 'Securely submit your payment',
             showBackButton: true,
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (existingRepayment != null &&
-                  existingRepayment.dueDate != null) ...[
-                _buildDueDateCard(context, existingRepayment.dueDate!),
-                const SizedBox(height: 32),
-              ],
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (existingRepayment != null &&
+                        existingRepayment.dueDate != null) ...[
+                      _buildDueDateCard(context, existingRepayment.dueDate!),
+                      const SizedBox(height: 32),
+                    ],
 
-              _buildSectionTitle('Amount (PKR)'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _amountController,
-                readOnly: isReadOnly,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: isDark ? const Color(0xFF1E1E24) : Colors.white,
-                  hintText: '0.00',
-                  prefixIcon: Icon(
-                    Icons.payments_rounded,
-                    color: AppTheme.colors(context).accent,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: AppTheme.colors(context).accent,
-                      width: 2,
-                    ),
-                  ),
-                ),
-                validator: (val) {
-                  if (val == null || val.isEmpty) {
-                    return 'Please enter an amount';
-                  }
-                  if (double.tryParse(val) == null) {
-                    return 'Please enter a valid number';
-                  }
-                  if (double.parse(val) <= 0) {
-                    return 'Amount must be greater than zero';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-
-              _buildSectionTitle('Payment Method'),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _selectedMethod,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.colors(context).textPrimary,
-                ),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: isDark ? const Color(0xFF1E1E24) : Colors.white,
-                  prefixIcon: Icon(
-                    Icons.account_balance_wallet_rounded,
-                    color: AppTheme.colors(context).primary,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.1),
-                    ),
-                  ),
-                ),
-                items: _methods.map((method) {
-                  String displayMethod = method;
-                  switch (method) {
-                    case 'bank_transfer':
-                      displayMethod = 'Bank Transfer';
-                      break;
-                    case 'jazzcash':
-                      displayMethod = 'JazzCash';
-                      break;
-                    case 'eaisypaisa':
-                      displayMethod = 'Easypaisa';
-                      break;
-                    case 'cash':
-                      displayMethod = 'Cash';
-                      break;
-                    case 'other':
-                      displayMethod = 'Other';
-                      break;
-                  }
-                  return DropdownMenuItem(value: method, child: Text(displayMethod));
-                }).toList(),
-                onChanged: isReadOnly ? null : (val) {
-                  if (val != null) {
-                    setState(() {
-                      _selectedMethod = val;
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 24),
-
-              _buildSectionTitle('Date Paid'),
-              const SizedBox(height: 8),
-              InkWell(
-                onTap: isReadOnly ? null : () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: _selectedDate,
-                    firstDate: DateTime.now().subtract(
-                      const Duration(days: 365),
-                    ),
-                    lastDate: DateTime.now(),
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      _selectedDate = picked;
-                    });
-                  }
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E1E24) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_month_rounded, color: AppTheme.colors(context).primary),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          DateFormat.yMMMMd().format(_selectedDate),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.colors(context).textPrimary,
+                    _buildSectionTitle('Amount (PKR)'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _amountController,
+                      readOnly: isReadOnly,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: isDark
+                            ? const Color(0xFF1E1E24)
+                            : Colors.white,
+                        hintText: '0.00',
+                        prefixIcon: Icon(
+                          Icons.payments_rounded,
+                          color: AppTheme.colors(context).accent,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.grey.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: AppTheme.colors(context).accent,
+                            width: 2,
                           ),
                         ),
                       ),
-                      Icon(Icons.edit_calendar_rounded, color: AppTheme.colors(context).textSecondary, size: 20),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              _buildSectionTitle('Reference / Note (Optional)'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _noteController,
-                readOnly: isReadOnly,
-                maxLines: 3,
-                style: const TextStyle(fontSize: 15),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: isDark ? const Color(0xFF1E1E24) : Colors.white,
-                  hintText: 'Add a note about this payment...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.1),
+                      validator: (val) {
+                        if (val == null || val.isEmpty) {
+                          return 'Please enter an amount';
+                        }
+                        if (double.tryParse(val) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        if (double.parse(val) <= 0) {
+                          return 'Amount must be greater than zero';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-              _buildSectionTitle('Payment Receipt (Optional)'),
-              const SizedBox(height: 8),
-              InkWell(
-                onTap: isReadOnly ? null : () {
-                  setState(() {
-                    _selectedFileName =
-                        'receipt_${DateTime.now().millisecondsSinceEpoch}.pdf';
-                  });
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: _selectedFileName != null
-                        ? AppTheme.colors(context).primarySurface
-                        : (isDark ? const Color(0xFF1E1E24) : Colors.white),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: _selectedFileName != null
-                          ? AppTheme.colors(context).primary.withValues(alpha: 0.5)
-                          : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.1)),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        _selectedFileName != null ? Icons.check_circle_rounded : Icons.upload_file_rounded,
-                        color: _selectedFileName != null 
-                            ? AppTheme.colors(context).primary 
-                            : AppTheme.colors(context).textSecondary,
-                        size: 28,
+                    _buildSectionTitle('Payment Method'),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedMethod,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.colors(context).textPrimary,
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: isDark
+                            ? const Color(0xFF1E1E24)
+                            : Colors.white,
+                        prefixIcon: Icon(
+                          Icons.account_balance_wallet_rounded,
+                          color: AppTheme.colors(context).primary,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.grey.withValues(alpha: 0.1),
+                          ),
+                        ),
+                      ),
+                      items: _methods.map((method) {
+                        String displayMethod = method;
+                        switch (method) {
+                          case 'bank_transfer':
+                            displayMethod = 'Bank Transfer';
+                            break;
+                          case 'jazzcash':
+                            displayMethod = 'JazzCash';
+                            break;
+                          case 'eaisypaisa':
+                            displayMethod = 'Easypaisa';
+                            break;
+                          case 'cash':
+                            displayMethod = 'Cash';
+                            break;
+                          case 'other':
+                            displayMethod = 'Other';
+                            break;
+                        }
+                        return DropdownMenuItem(
+                          value: method,
+                          child: Text(displayMethod),
+                        );
+                      }).toList(),
+                      onChanged: isReadOnly
+                          ? null
+                          : (val) {
+                              if (val != null) {
+                                setState(() {
+                                  _selectedMethod = val;
+                                });
+                              }
+                            },
+                    ),
+                    const SizedBox(height: 24),
+
+                    _buildSectionTitle('Date Paid'),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: isReadOnly
+                          ? null
+                          : () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: _selectedDate,
+                                firstDate: DateTime.now().subtract(
+                                  const Duration(days: 365),
+                                ),
+                                lastDate: DateTime.now(),
+                              );
+                              if (picked != null) {
+                                setState(() {
+                                  _selectedDate = picked;
+                                });
+                              }
+                            },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 18,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF1E1E24)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.grey.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        child: Row(
                           children: [
-                            Text(
-                              _selectedFileName != null ? 'Receipt Attached' : 'Upload Receipt',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: _selectedFileName != null
-                                    ? AppTheme.colors(context).primary
-                                    : AppTheme.colors(context).textPrimary,
+                            Icon(
+                              Icons.calendar_month_rounded,
+                              color: AppTheme.colors(context).primary,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                DateFormat.yMMMMd().format(_selectedDate),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.colors(context).textPrimary,
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _selectedFileName ?? 'Tap to select an image or PDF',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppTheme.colors(context).textSecondary,
-                              ),
+                            Icon(
+                              Icons.edit_calendar_rounded,
+                              color: AppTheme.colors(context).textSecondary,
+                              size: 20,
                             ),
                           ],
                         ),
                       ),
-                      if (_selectedFileName != null && !isReadOnly)
-                        IconButton(
-                          icon: Icon(Icons.close_rounded, color: AppTheme.colors(context).danger),
-                          onPressed: () {
-                            setState(() {
-                              _selectedFileName = null;
-                            });
-                          },
-                        ),
-                    ],
-                  ),
-                ),
-              ),
+                    ),
+                    const SizedBox(height: 24),
 
-              const SizedBox(height: 48),
-
-              if (!isReadOnly)
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: LinearGradient(
-                      colors: [
-                        AppTheme.colors(context).primary,
-                        AppTheme.colors(context).accent,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.colors(context).primary.withValues(alpha: 0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: _isLoading ? null : () => _submit(existingRepayment),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                        child: Center(
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 3,
-                                  ),
-                                )
-                              : const Text(
-                                  'Submit Payment',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
+                    _buildSectionTitle('Reference / Note (Optional)'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _noteController,
+                      readOnly: isReadOnly,
+                      maxLines: 3,
+                      style: const TextStyle(fontSize: 15),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: isDark
+                            ? const Color(0xFF1E1E24)
+                            : Colors.white,
+                        hintText: 'Add a note about this payment...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
                         ),
-                      ),
-                    ),
-                  ),
-                )
-              else
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.orange.withValues(alpha: 0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: const Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.hourglass_top_rounded, color: Colors.orange, size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          'Waiting for confirmation',
-                          style: TextStyle(
-                            color: Colors.orange,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.grey.withValues(alpha: 0.1),
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 24),
+
+                    _buildSectionTitle('Payment Receipt (Optional)'),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: isReadOnly
+                          ? null
+                          : () {
+                              setState(() {
+                                _selectedFileName =
+                                    'receipt_${DateTime.now().millisecondsSinceEpoch}.pdf';
+                              });
+                            },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: _selectedFileName != null
+                              ? AppTheme.colors(context).primarySurface
+                              : (isDark
+                                    ? const Color(0xFF1E1E24)
+                                    : Colors.white),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: _selectedFileName != null
+                                ? AppTheme.colors(
+                                    context,
+                                  ).primary.withValues(alpha: 0.5)
+                                : (isDark
+                                      ? Colors.white10
+                                      : Colors.grey.withValues(alpha: 0.1)),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _selectedFileName != null
+                                  ? Icons.check_circle_rounded
+                                  : Icons.upload_file_rounded,
+                              color: _selectedFileName != null
+                                  ? AppTheme.colors(context).primary
+                                  : AppTheme.colors(context).textSecondary,
+                              size: 28,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _selectedFileName != null
+                                        ? 'Receipt Attached'
+                                        : 'Upload Receipt',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: _selectedFileName != null
+                                          ? AppTheme.colors(context).primary
+                                          : AppTheme.colors(
+                                              context,
+                                            ).textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    _selectedFileName ??
+                                        'Tap to select an image or PDF',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppTheme.colors(
+                                        context,
+                                      ).textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (_selectedFileName != null && !isReadOnly)
+                              IconButton(
+                                icon: Icon(
+                                  Icons.close_rounded,
+                                  color: AppTheme.colors(context).danger,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedFileName = null;
+                                  });
+                                },
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 48),
+
+                    if (!isReadOnly)
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          gradient: LinearGradient(
+                            colors: [
+                              AppTheme.colors(context).primary,
+                              AppTheme.colors(context).accent,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.colors(
+                                context,
+                              ).primary.withValues(alpha: 0.3),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: _isLoading
+                                ? null
+                                : () => _submit(existingRepayment),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              child: Center(
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 3,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Submit Payment',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.orange.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.hourglass_top_rounded,
+                                color: Colors.orange,
+                                size: 20,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Waiting for confirmation',
+                                style: TextStyle(
+                                  color: Colors.orange,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 120),
+                  ],
                 ),
-              const SizedBox(height: 120),
-            ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
-    ),
-  ],
-),
     );
   }
 
@@ -535,7 +609,7 @@ class _BorrowerRepaymentFormScreenState
 
   Widget _buildDueDateCard(BuildContext context, DateTime dueDate) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

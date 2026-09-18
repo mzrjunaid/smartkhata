@@ -5,7 +5,6 @@ import 'package:shimmer/shimmer.dart';
 
 import '../providers/dashboard_providers.dart';
 import 'package:smartkhata/core/theme/app_theme.dart';
-import 'section_header.dart';
 
 /// A modern, sleek Line (Area) chart comparing monthly Disbursed vs Collected.
 /// Uses `fl_chart` and self-manages its async state.

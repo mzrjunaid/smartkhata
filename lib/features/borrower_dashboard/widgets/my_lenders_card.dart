@@ -7,7 +7,6 @@ import '../../loan_users/data/loan_users_repository.dart';
 import '../../loan_users/models/borrower_connection_model.dart';
 import '../../../core/providers/profile_providers.dart';
 import 'package:smartkhata/core/theme/app_theme.dart';
-import '../../lender_dashboard/widgets/section_header.dart';
 
 class MyLendersCard extends ConsumerWidget {
   const MyLendersCard({super.key});
@@ -25,19 +24,26 @@ class MyLendersCard extends ConsumerWidget {
         final isDark = Theme.of(context).brightness == Brightness.dark;
 
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: AppTheme.spacingLg, vertical: 12),
+          margin: const EdgeInsets.symmetric(
+            horizontal: AppTheme.spacingLg,
+            vertical: 12,
+          ),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E1E24) : Colors.white,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.08),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : Colors.grey.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
             ],
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.03),
               width: 1.5,
             ),
           ),
@@ -72,9 +78,11 @@ class MyLendersCard extends ConsumerWidget {
                         _LenderCard(connection: c),
                         if (index < connections.length - 1)
                           Divider(
-                            height: 1, 
-                            indent: 84, 
-                            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                            height: 1,
+                            indent: 84,
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.black.withValues(alpha: 0.05),
                           ),
                       ],
                     );
@@ -159,7 +167,9 @@ class _LenderCard extends ConsumerWidget {
     );
     final isPendingConnection = connection.status == 'pending';
     final isPending =
-        isPendingConnection || connection.hasPendingInvitation || hasPendingLoan;
+        isPendingConnection ||
+        connection.hasPendingInvitation ||
+        hasPendingLoan;
 
     String pendingText = 'Pending';
     if (isPendingConnection) {
@@ -175,9 +185,12 @@ class _LenderCard extends ConsumerWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => context.push('/borrower-profile/${connection.connectionId}'),
+        onTap: () =>
+            context.push('/borrower-profile/${connection.connectionId}'),
         splashColor: AppTheme.colors(context).primary.withValues(alpha: 0.05),
-        highlightColor: AppTheme.colors(context).primary.withValues(alpha: 0.02),
+        highlightColor: AppTheme.colors(
+          context,
+        ).primary.withValues(alpha: 0.02),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Row(
@@ -187,7 +200,7 @@ class _LenderCard extends ConsumerWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: isDark 
+                    colors: isDark
                         ? [const Color(0xFF2C3E50), const Color(0xFF3498DB)]
                         : [const Color(0xFFE0EAFC), const Color(0xFFCFDEF3)],
                     begin: Alignment.topLeft,
@@ -196,7 +209,9 @@ class _LenderCard extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: isDark ? Colors.black26 : Colors.blue.withValues(alpha: 0.2),
+                      color: isDark
+                          ? Colors.black26
+                          : Colors.blue.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -244,7 +259,9 @@ class _LenderCard extends ConsumerWidget {
                               color: AppTheme.colors(context).warningSurface,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppTheme.colors(context).warning.withValues(alpha: 0.3),
+                                color: AppTheme.colors(
+                                  context,
+                                ).warning.withValues(alpha: 0.3),
                               ),
                             ),
                             child: Text(
@@ -343,7 +360,11 @@ class _LenderCard extends ConsumerWidget {
                       ),
                       child: const Padding(
                         padding: EdgeInsets.all(10),
-                        child: Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 18),
+                        child: Icon(
+                          Icons.chat_bubble_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ),
@@ -356,4 +377,3 @@ class _LenderCard extends ConsumerWidget {
     );
   }
 }
-

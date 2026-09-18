@@ -20,7 +20,9 @@ class SettingsScreen extends ConsumerWidget {
             MediaQuery.platformBrightnessOf(context) == Brightness.dark);
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FA),
+      backgroundColor: isDark
+          ? const Color(0xFF121212)
+          : const Color(0xFFF8F9FA),
       body: Column(
         children: [
           const DashboardAppBar(
@@ -43,11 +45,13 @@ class SettingsScreen extends ConsumerWidget {
                       subtitle: 'Toggle dark theme',
                       trailing: Switch(
                         value: isDark,
-                        activeColor: AppTheme.colors(context).primary,
+                        activeThumbColor: AppTheme.colors(context).primary,
                         onChanged: (val) {
                           ref
                               .read(themeProvider.notifier)
-                              .setThemeMode(val ? ThemeMode.dark : ThemeMode.light);
+                              .setThemeMode(
+                                val ? ThemeMode.dark : ThemeMode.light,
+                              );
                         },
                       ),
                     ),
@@ -132,7 +136,10 @@ class SettingsScreen extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Icon(Icons.chevron_right_rounded, color: AppTheme.colors(context).textTertiary),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: AppTheme.colors(context).textTertiary,
+                          ),
                         ],
                       ),
                       onTap: () {
@@ -150,7 +157,9 @@ class SettingsScreen extends ConsumerWidget {
                     color: AppTheme.colors(context).dangerSurface,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: AppTheme.colors(context).danger.withValues(alpha: 0.3),
+                      color: AppTheme.colors(
+                        context,
+                      ).danger.withValues(alpha: 0.3),
                       width: 1.5,
                     ),
                   ),
@@ -162,11 +171,17 @@ class SettingsScreen extends ConsumerWidget {
                         _showLogoutDialog(context);
                       },
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.logout_rounded, color: AppTheme.colors(context).danger),
+                            Icon(
+                              Icons.logout_rounded,
+                              color: AppTheme.colors(context).danger,
+                            ),
                             const SizedBox(width: 12),
                             Text(
                               'Log Out',
@@ -205,7 +220,11 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionCard(BuildContext context, {required String title, required List<Widget> children}) {
+  Widget _buildSectionCard(
+    BuildContext context, {
+    required String title,
+    required List<Widget> children,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
@@ -229,21 +248,23 @@ class SettingsScreen extends ConsumerWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.08),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : Colors.grey.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
             ],
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.03),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.03),
               width: 1.5,
             ),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(24),
-            child: Column(
-              children: children,
-            ),
+            child: Column(children: children),
           ),
         ),
       ],
@@ -282,7 +303,11 @@ class SettingsScreen extends ConsumerWidget {
                   color: AppTheme.colors(context).primarySurface,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: AppTheme.colors(context).primary, size: 22),
+                child: Icon(
+                  icon,
+                  color: AppTheme.colors(context).primary,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -312,10 +337,13 @@ class SettingsScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              if (trailing != null) 
-                trailing 
+              if (trailing != null)
+                trailing
               else if (onTap != null)
-                Icon(Icons.chevron_right_rounded, color: AppTheme.colors(context).textTertiary),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppTheme.colors(context).textTertiary,
+                ),
             ],
           ),
         ),
@@ -332,7 +360,7 @@ class SettingsScreen extends ConsumerWidget {
         backgroundColor: isDark ? const Color(0xFF1E1E24) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
-          'Log Out', 
+          'Log Out',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w800,
@@ -346,7 +374,10 @@ class SettingsScreen extends ConsumerWidget {
             color: AppTheme.colors(context).textSecondary,
           ),
         ),
-        actionsPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        actionsPadding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 16,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -363,10 +394,15 @@ class SettingsScreen extends ConsumerWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.colors(context).danger,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            child: const Text('Log Out', style: TextStyle(fontWeight: FontWeight.w700)),
+            child: const Text(
+              'Log Out',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
@@ -388,9 +424,11 @@ class SettingsScreen extends ConsumerWidget {
       builder: (ctx) {
         return AlertDialog(
           backgroundColor: isDark ? const Color(0xFF1E1E24) : Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           title: Text(
-            'Change Password', 
+            'Change Password',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
@@ -410,7 +448,9 @@ class SettingsScreen extends ConsumerWidget {
                 decoration: InputDecoration(
                   labelText: 'New Password',
                   prefixIcon: const Icon(Icons.lock_rounded),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -424,12 +464,17 @@ class SettingsScreen extends ConsumerWidget {
                 decoration: InputDecoration(
                   labelText: 'Confirm Password',
                   prefixIcon: const Icon(Icons.lock_rounded),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ],
           ),
-          actionsPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          actionsPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 16,
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
@@ -487,10 +532,18 @@ class SettingsScreen extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.colors(context).primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
-              child: const Text('Update', style: TextStyle(fontWeight: FontWeight.w700)),
+              child: const Text(
+                'Update',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
             ),
           ],
         );
